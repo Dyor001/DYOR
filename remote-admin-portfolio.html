@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓位管理大模块</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #131c2f;
+      --panel-soft: #1a2640;
+      --line: #2b3a5e;
+      --text: #ebf1ff;
+      --muted: #9cb0dc;
+      --accent: #f0b90b;
+      --ok: #1ec97f;
+      --warn: #ffb84d;
+      --danger: #ff6b6b;
+      --info: #63b3ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #0b1220 0%, #0e1628 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(14, 22, 40, 0.92);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .panel {
+      background: rgba(19, 28, 47, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .main {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.3;
+    }
+    .muted { color: var(--muted); font-size: 13px; }
+    .status {
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .status.ok { color: var(--ok); }
+    .status.error { color: var(--danger); }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #1e1a10;
+      border-color: #e6b727;
+    }
+    .btn-danger {
+      background: rgba(255, 107, 107, 0.1);
+      color: #ffb4b4;
+      border-color: rgba(255, 107, 107, 0.45);
+    }
+    .btn-light {
+      background: rgba(99, 179, 255, 0.1);
+      border-color: rgba(99, 179, 255, 0.35);
+      color: #bfe1ff;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #0f182d;
+      color: var(--text);
+      border-radius: 9px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    textarea { min-height: 86px; resize: vertical; }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .field-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .field-title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .token-list {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: auto;
+      max-height: calc(100vh - 280px);
+    }
+    .token-item {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-radius: 0;
+      text-align: left;
+      background: transparent;
+      padding: 10px 12px;
+      display: grid;
+      gap: 3px;
+      cursor: pointer;
+    }
+    .token-item:hover { background: rgba(255,255,255,0.03); }
+    .token-item.active { background: rgba(240, 185, 11, 0.12); }
+    .token-symbol { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; }
+    .token-sub { color: var(--muted); font-size: 12px; }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .chip {
+      background: rgba(99, 179, 255, 0.12);
+      border: 1px solid rgba(99, 179, 255, 0.38);
+      color: #cfe8ff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .chip.warn {
+      background: rgba(255, 184, 77, 0.12);
+      border-color: rgba(255, 184, 77, 0.35);
+      color: #ffdca8;
+    }
+    .chip.ok {
+      background: rgba(30, 201, 127, 0.12);
+      border-color: rgba(30, 201, 127, 0.35);
+      color: #bbf4d9;
+    }
+    .chip.danger {
+      background: rgba(255, 107, 107, 0.12);
+      border-color: rgba(255, 107, 107, 0.35);
+      color: #ffc4c4;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 7px 6px;
+      vertical-align: middle;
+      text-align: left;
+      font-size: 12px;
+    }
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .metric-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      padding: 10px;
+    }
+    .metric-label { color: var(--muted); font-size: 11px; }
+    .metric-value { font-weight: 800; margin-top: 4px; font-size: 16px; }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .section-title h3 { font-size: 15px; }
+    .empty {
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 11px;
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+    @media (max-width: 1200px) {
+      .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .token-list { max-height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="panel">
+        <h1 style="font-size:20px;color:#f0b90b;">仓位管理大模块</h1>
+        <p class="muted" style="margin-top:4px;">交易台账 + 成本收益 + 仓位约束 + 价格线 + 备注策略（持仓/占比已联动社区基金）</p>
+        <p style="margin-top:8px;"><a href="/admin-alpha.html" style="color:#9fd0ff;text-decoration:none;">返回主后台</a></p>
+        <p style="margin-top:6px;"><a href="/portfolio.html" style="color:#9fd0ff;text-decoration:none;">打开前台展示页</a></p>
+      </div>
+
+      <div class="panel">
+        <label class="field-title">管理密码</label>
+        <input id="adminPasswordInput" type="password" placeholder="输入后台密码">
+        <div class="btn-row" style="margin-top:8px;">
+          <button id="loadBtn" class="btn-light">读取数据</button>
+          <button id="saveBtn" class="btn-primary">保存数据</button>
+          <button id="saveRefreshBtn">保存并刷新价格</button>
+        </div>
+        <div id="globalStatus" class="status" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>代币列表</h3>
+          <button id="addTokenBtn">+ 新增</button>
+        </div>
+        <div id="tokenList" class="token-list"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="editorWrap" class="panel">
+        <div class="empty">先在左侧输入密码并读取数据，然后选择或新增代币。</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const PRESET_LINES = [
+      { value: 'public_sale', label: '公售价格线' },
+      { value: 'institution', label: '机构价格线' },
+      { value: 'open_price', label: '代币开盘价格线' },
+      { value: 'valuation', label: '估值价格线' },
+      { value: 'k4h_resistance', label: '4小时K线压力位' },
+      { value: 'k4h_support', label: '4小时K线阻力位' },
+      { value: 'custom', label: '自定义价格线' }
+    ];
+
+    const DEFAULT_TAG_LIBRARY = ['Meme', 'AI', 'DeFi', 'GameFi', 'L1', 'L2', 'RWA'];
+
+    let state = {
+      tagLibrary: [...DEFAULT_TAG_LIBRARY],
+      tokens: []
+    };
+    let metricsById = {};
+    let activeTokenId = null;
+
+    const tokenListEl = document.getElementById('tokenList');
+    const editorWrapEl = document.getElementById('editorWrap');
+    const statusEl = document.getElementById('globalStatus');
+    const adminPasswordInput = document.getElementById('adminPasswordInput');
+
+    adminPasswordInput.value = localStorage.getItem('portfolioAdminPassword') || '';
+
+    function saveLocalPassword() {
+      localStorage.setItem('portfolioAdminPassword', adminPasswordInput.value.trim());
+      return adminPasswordInput.value.trim();
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+      statusEl.textContent = message;
+    }
+
+    function fmt(value, digits = 4) {
+      if (!Number.isFinite(Number(value))) return '-';
+      return Number(value).toLocaleString('en-US', { maximumFractionDigits: digits });
+    }
+
+    function uid(prefix) {
+      return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function getActiveToken() {
+      return state.tokens.find(item => item.id === activeTokenId) || null;
+    }
+
+    function buildEmptyToken() {
+      return {
+        id: uid('token'),
+        symbol: '',
+        sectorTag: '',
+        recommendationTime: '',
+        allocationPlan: '',
+        expectedHoldingPeriod: '',
+        targetPrice: null,
+        targetMcap: null,
+        currentStatus: '观察中',
+        resultTag: '',
+        closedAt: '',
+        assetType: 'binance',
+        chainId: '56',
+        contractAddress: '',
+        maxPositionPct: 0,
+        confirmedAvgCost: null,
+        fundamentals: '',
+        strategy: '',
+        keyDate: '',
+        twitterUrl: '',
+        tags: [],
+        priceLines: [],
+        trades: [],
+        operationLogs: []
+      };
+    }
+
+    function stripRuntimeToken(raw) {
+      return {
+        id: raw.id,
+        symbol: raw.symbol || '',
+        sectorTag: raw.sectorTag || '',
+        recommendationTime: raw.recommendationTime || '',
+        allocationPlan: raw.allocationPlan || '',
+        expectedHoldingPeriod: raw.expectedHoldingPeriod || '',
+        targetPrice: raw.targetPrice != null ? Number(raw.targetPrice) : null,
+        targetMcap: raw.targetMcap != null ? Number(raw.targetMcap) : null,
+        currentStatus: raw.currentStatus || '',
+        resultTag: raw.resultTag || '',
+        closedAt: raw.closedAt || '',
+        assetType: raw.assetType === 'onchain' ? 'onchain' : 'binance',
+        chainId: raw.chainId || '56',
+        contractAddress: raw.contractAddress || '',
+        maxPositionPct: Number(raw.maxPositionPct || 0),
+        confirmedAvgCost: raw.confirmedAvgCost != null ? Number(raw.confirmedAvgCost) : null,
+        fundamentals: raw.fundamentals || '',
+        strategy: raw.strategy || '',
+        keyDate: raw.keyDate || '',
+        twitterUrl: raw.twitterUrl || '',
+        tags: Array.isArray(raw.tags) ? raw.tags : [],
+        priceLines: Array.isArray(raw.priceLines) ? raw.priceLines.map(line => ({
+          id: line.id || uid('line'),
+          type: line.type || 'custom',
+          name: line.name || '',
+          price: Number(line.price || 0)
+        })) : [],
+        trades: Array.isArray(raw.trades) ? raw.trades.map(trade => ({
+          id: trade.id || uid('trade'),
+          date: trade.date || new Date().toISOString().slice(0, 10),
+          side: trade.side === 'sell' ? 'sell' : 'buy',
+          quantity: Number(trade.quantity || 0),
+          price: Number(trade.price || 0),
+          fee: Number(trade.fee || 0),
+          note: trade.note || ''
+        })) : [],
+        operationLogs: Array.isArray(raw.operationLogs) ? raw.operationLogs.map(log => ({
+          id: log.id || uid('op'),
+          timestamp: log.timestamp || new Date().toISOString(),
+          action: log.action || '更新',
+          price: Number.isFinite(Number(log.price)) ? Number(log.price) : null,
+          reason: log.reason || '',
+          note: log.note || ''
+        })) : []
+      };
+    }
+
+    function localTradeMetrics(trades) {
+      const sorted = [...trades].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      let qty = 0;
+      let cost = 0;
+      let buy = 0;
+      let sellNet = 0;
+      for (const row of sorted) {
+        const q = Number(row.quantity || 0);
+        const p = Number(row.price || 0);
+        const f = Number(row.fee || 0);
+        if (!(q > 0) || !(p > 0)) continue;
+        if (row.side === 'buy') {
+          qty += q;
+          const buyCost = q * p + f;
+          cost += buyCost;
+          buy += buyCost;
+          continue;
+        }
+        const s = Math.min(q, qty);
+        if (s <= 0) continue;
+        const avg = qty > 0 ? cost / qty : 0;
+        cost -= avg * s;
+        qty -= s;
+        sellNet += q * p - f;
+      }
+      if (qty <= 1e-8) {
+        qty = 0;
+        cost = 0;
+      }
+      const avgCost = qty > 0 ? cost / qty : null;
+      const zeroCostQty = qty > 0 && sellNet >= buy ? qty : null;
+      return { qty, cost, avgCost, zeroCostQty };
+    }
+
+    function renderTokenList() {
+      tokenListEl.innerHTML = '';
+      if (!state.tokens.length) {
+        tokenListEl.innerHTML = '<div class="empty" style="margin:8px;">暂无代币，点击 + 新增</div>';
+        return;
+      }
+
+      for (const token of state.tokens) {
+        const m = metricsById[token.id] || {};
+        const btn = document.createElement('button');
+        btn.className = 'token-item' + (token.id === activeTokenId ? ' active' : '');
+        btn.type = 'button';
+        btn.innerHTML = `
+          <div class="token-symbol">${token.symbol || '未命名代币'}</div>
+          <div class="token-sub">${token.assetType === 'onchain' ? '链上' : '币安'} / ${token.chainId || '-'}</div>
+          <div class="token-sub">当前占比: ${m.ratioMetrics?.currentRatioPct != null ? fmt(m.ratioMetrics.currentRatioPct, 2) + '%' : '-'}</div>
+        `;
+        btn.onclick = () => {
+          activeTokenId = token.id;
+          renderTokenList();
+          renderEditor();
+        };
+        tokenListEl.appendChild(btn);
+      }
+    }
+
+    function lineTypeOptions(selected) {
+      return PRESET_LINES.map(line => {
+        const sel = line.value === selected ? 'selected' : '';
+        return `<option value="${line.value}" ${sel}>${line.label}</option>`;
+      }).join('');
+    }
+
+    function renderEditor() {
+      const token = getActiveToken();
+      if (!token) {
+        editorWrapEl.innerHTML = '<div class="empty">先选择一个代币进行编辑。</div>';
+        return;
+      }
+
+      const m = metricsById[token.id] || {};
+      const localM = localTradeMetrics(token.trades || []);
+      const tm = m.tradeMetrics || {};
+      const hm = m.holdingMetrics || {};
+      const currentPrice = Number(m.currentPrice || 0);
+      const qtyDisplay = Number.isFinite(Number(hm.quantity))
+        ? Number(hm.quantity)
+        : (Number.isFinite(Number(tm.quantity)) ? Number(tm.quantity) : localM.qty);
+      const avgCostDisplay = Number.isFinite(Number(tm.avgCost))
+        ? Number(tm.avgCost)
+        : localM.avgCost;
+      const value = Number.isFinite(Number(hm.currentValue))
+        ? Number(hm.currentValue)
+        : (Number.isFinite(currentPrice) ? qtyDisplay * currentPrice : null);
+      const roi = Number.isFinite(Number(m.pnlPct))
+        ? Number(m.pnlPct)
+        : ((avgCostDisplay && Number.isFinite(currentPrice) && avgCostDisplay > 0)
+            ? ((currentPrice - avgCostDisplay) / avgCostDisplay * 100)
+            : null);
+      const ratioNow = m.ratioMetrics && Number.isFinite(Number(m.ratioMetrics.currentRatioPct))
+        ? Number(m.ratioMetrics.currentRatioPct)
+        : null;
+      const completion = m.ratioMetrics && Number.isFinite(Number(m.ratioMetrics.buildProgressPct))
+        ? Number(m.ratioMetrics.buildProgressPct)
+        : (token.maxPositionPct > 0 && Number.isFinite(ratioNow) ? (ratioNow / token.maxPositionPct * 100) : null);
+      const linePos = m.priceLinePosition || null;
+
+      editorWrapEl.innerHTML = `
+        <div class="section-title">
+          <h2>代币编辑：${token.symbol || '未命名代币'}</h2>
+          <div class="btn-row">
+            <button id="cloneTokenBtn">复制当前代币</button>
+            <button id="deleteTokenBtn" class="btn-danger">删除当前代币</button>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <div>
+            <label class="field-title">代币 Symbol</label>
+            <input id="tokenSymbolInput" value="${escapeHtml(token.symbol)}" placeholder="例如 BTC / PEPE">
+          </div>
+          <div>
+            <label class="field-title">赛道标签</label>
+            <input id="sectorTagInput" value="${escapeHtml(token.sectorTag || '')}" placeholder="例如 Meme / AI / DeFi">
+          </div>
+          <div>
+            <label class="field-title">推荐时间（到分钟）</label>
+            <input id="recommendationTimeInput" type="datetime-local" value="${escapeHtml(token.recommendationTime || '')}">
+          </div>
+          <div>
+            <label class="field-title">当前状态</label>
+            <select id="currentStatusInput">
+              <option value="观察中" ${String(token.currentStatus || '') === '观察中' ? 'selected' : ''}>观察中</option>
+              <option value="已建仓" ${String(token.currentStatus || '') === '已建仓' ? 'selected' : ''}>已建仓</option>
+              <option value="减仓中" ${String(token.currentStatus || '') === '减仓中' ? 'selected' : ''}>减仓中</option>
+              <option value="已结束" ${String(token.currentStatus || '') === '已结束' ? 'selected' : ''}>已结束</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-title">资产类型</label>
+            <select id="assetTypeInput">
+              <option value="binance" ${token.assetType === 'binance' ? 'selected' : ''}>币安</option>
+              <option value="onchain" ${token.assetType === 'onchain' ? 'selected' : ''}>链上</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-title">链</label>
+            <select id="chainIdInput">
+              <option value="56" ${token.chainId === '56' ? 'selected' : ''}>BSC</option>
+              <option value="1" ${token.chainId === '1' ? 'selected' : ''}>ETH</option>
+              <option value="8453" ${token.chainId === '8453' ? 'selected' : ''}>BASE</option>
+              <option value="sol" ${token.chainId === 'sol' ? 'selected' : ''}>SOL</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-title">仓位上限（%）</label>
+            <input id="maxPositionInput" type="number" step="any" value="${Number(token.maxPositionPct || 0)}" placeholder="例如 15">
+          </div>
+          <div>
+            <label class="field-title">初始确认成本（一次确认）</label>
+            <input id="confirmedAvgCostInput" type="number" step="any" value="${token.confirmedAvgCost != null ? Number(token.confirmedAvgCost) : ''}" placeholder="例如 0.025">
+            <div style="margin-top:8px;">
+              <button id="matchRecPriceBtn" type="button" class="btn-light">按喊单时间匹配价格</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-grid" style="margin-top:8px;">
+          <div>
+            <label class="field-title">分仓策略</label>
+            <input id="allocationPlanInput" value="${escapeHtml(token.allocationPlan || '')}" placeholder="例如 40%-30%-30%">
+          </div>
+          <div>
+            <label class="field-title">预期持仓周期</label>
+            <input id="expectedHoldingPeriodInput" value="${escapeHtml(token.expectedHoldingPeriod || '')}" placeholder="例如 2-4周 / 1-3月">
+          </div>
+          <div>
+            <label class="field-title">止盈目标价</label>
+            <input id="targetPriceInput" type="number" step="any" value="${token.targetPrice != null ? Number(token.targetPrice) : ''}" placeholder="例如 0.123">
+          </div>
+          <div>
+            <label class="field-title">止盈目标市值</label>
+            <input id="targetMcapInput" type="number" step="any" value="${token.targetMcap != null ? Number(token.targetMcap) : ''}" placeholder="例如 500000000">
+          </div>
+          <div>
+            <label class="field-title">结果标签（历史复盘）</label>
+            <select id="resultTagInput">
+              <option value="" ${!token.resultTag ? 'selected' : ''}>进行中</option>
+              <option value="达成目标" ${token.resultTag === '达成目标' ? 'selected' : ''}>达成目标</option>
+              <option value="止损" ${token.resultTag === '止损' ? 'selected' : ''}>止损</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-title">结束时间</label>
+            <input id="closedAtInput" type="datetime-local" value="${escapeHtml(token.closedAt || '')}">
+          </div>
+        </div>
+
+        <div class="field-grid-2" style="margin-top:8px;">
+          <div>
+            <label class="field-title">合约地址</label>
+            <input id="contractInput" value="${escapeHtml(token.contractAddress)}" placeholder="链上代币填合约地址">
+          </div>
+          <div>
+            <label class="field-title">官方推特链接</label>
+            <input id="twitterInput" value="${escapeHtml(token.twitterUrl)}" placeholder="https://x.com/...">
+          </div>
+        </div>
+
+        <div class="metric-grid" style="margin-top:10px;">
+          <div class="metric-card">
+            <div class="metric-label">实时价格</div>
+            <div class="metric-value">${Number.isFinite(currentPrice) && currentPrice > 0 ? fmt(currentPrice, 8) : '-'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">当前持仓数量</div>
+            <div class="metric-value">${fmt(qtyDisplay, 8)}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">真实持仓成本</div>
+            <div class="metric-value">${avgCostDisplay ? fmt(avgCostDisplay, 8) : '-'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">收益率（%）</div>
+            <div class="metric-value" style="color:${roi == null ? 'var(--text)' : (roi >= 0 ? 'var(--ok)' : 'var(--danger)')}">${roi == null ? '-' : fmt(roi, 2) + '%'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">当前价值</div>
+            <div class="metric-value">${Number.isFinite(value) ? fmt(value, 4) : '-'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">占账户总仓位（%）</div>
+            <div class="metric-value">${ratioNow == null ? '-' : fmt(ratioNow, 2) + '%'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">占自身上限完成度（%）</div>
+            <div class="metric-value">${completion == null ? '-' : fmt(completion, 2) + '%'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">零成本筹码</div>
+            <div class="metric-value">${(Number.isFinite(Number(tm.zeroCostQty)) ? Number(tm.zeroCostQty) : localM.zeroCostQty) == null ? '-' : fmt(Number.isFinite(Number(tm.zeroCostQty)) ? Number(tm.zeroCostQty) : localM.zeroCostQty, 8)}</div>
+          </div>
+        </div>
+
+        <div class="chip-row" style="margin-top:8px;">
+          <span class="chip ${hm.linkedFromFund ? 'ok' : 'warn'}">持仓口径：${hm.linkedFromFund ? '已联动社区基金实时持仓' : '未匹配到基金持仓，回退台账口径'}</span>
+          <span class="chip">价值口径：${Number.isFinite(Number(hm.currentValue)) ? '社区基金实时价值' : '持仓×现价估算'}</span>
+          <span class="chip ${tm.source === 'snapshot_auto' ? 'ok' : 'warn'}">成本口径：${tm.source === 'snapshot_auto' ? '仓位变动采集自动核算' : '手工交易台账核算'}</span>
+          ${linePos ? renderLinePositionChip(linePos) : '<span class="chip">价格线定位：暂无</span>'}
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="section-title">
+            <h3>价格线可视化配置</h3>
+            <div class="btn-row">
+              <button id="addLineBtn">+ 添加价格线</button>
+              <button id="addPresetLineBtn" class="btn-light">一键补齐预设六条</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:180px;">类型</th>
+                <th>名称</th>
+                <th style="width:180px;">价格</th>
+                <th style="width:70px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="priceLineBody">
+              ${(token.priceLines || []).map((line, idx) => `
+                <tr data-line-index="${idx}">
+                  <td><select data-line-field="type">${lineTypeOptions(line.type)}</select></td>
+                  <td><input data-line-field="name" value="${escapeHtml(line.name || '')}" placeholder="自定义名称"></td>
+                  <td><input data-line-field="price" type="number" step="any" value="${Number(line.price || 0)}"></td>
+                  <td><button data-line-delete="${idx}" class="btn-danger" type="button">删</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          ${(token.priceLines || []).length ? '' : '<div class="muted" style="margin-top:8px;">未配置价格线，可按需添加。</div>'}
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="section-title">
+            <h3>交易台账</h3>
+            <button id="addTradeBtn">+ 添加交易</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:130px;">日期</th>
+                <th style="width:110px;">方向</th>
+                <th style="width:180px;">数量</th>
+                <th style="width:180px;">成交价</th>
+                <th style="width:140px;">手续费</th>
+                <th>备注</th>
+                <th style="width:70px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tradeBody">
+              ${(token.trades || []).map((trade, idx) => `
+                <tr data-trade-index="${idx}">
+                  <td><input data-trade-field="date" type="date" value="${escapeHtml(trade.date || '')}"></td>
+                  <td>
+                    <select data-trade-field="side">
+                      <option value="buy" ${trade.side === 'buy' ? 'selected' : ''}>买入</option>
+                      <option value="sell" ${trade.side === 'sell' ? 'selected' : ''}>卖出</option>
+                    </select>
+                  </td>
+                  <td><input data-trade-field="quantity" type="number" step="any" value="${Number(trade.quantity || 0)}"></td>
+                  <td><input data-trade-field="price" type="number" step="any" value="${Number(trade.price || 0)}"></td>
+                  <td><input data-trade-field="fee" type="number" step="any" value="${Number(trade.fee || 0)}"></td>
+                  <td><input data-trade-field="note" value="${escapeHtml(trade.note || '')}"></td>
+                  <td><button data-trade-delete="${idx}" class="btn-danger" type="button">删</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          ${(token.trades || []).length ? '' : '<div class="muted" style="margin-top:8px;">未记录交易，先录入买卖台账才能自动核算成本收益。</div>'}
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="section-title">
+            <h3>操作记录时间线</h3>
+            <button id="addOpLogBtn">+ 添加操作记录</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:190px;">时间</th>
+                <th style="width:130px;">动作</th>
+                <th style="width:150px;">价格</th>
+                <th style="width:220px;">原因</th>
+                <th>备注</th>
+                <th style="width:70px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="opLogBody">
+              ${(token.operationLogs || []).map((log, idx) => `
+                <tr data-op-index="${idx}">
+                  <td><input data-op-field="timestamp" type="datetime-local" value="${escapeHtml(String(log.timestamp || '').slice(0,16))}"></td>
+                  <td><input data-op-field="action" value="${escapeHtml(log.action || '')}" placeholder="加仓/减仓/改目标"></td>
+                  <td><input data-op-field="price" type="number" step="any" value="${log.price != null ? Number(log.price) : ''}"></td>
+                  <td><input data-op-field="reason" value="${escapeHtml(log.reason || '')}" placeholder="触发依据"></td>
+                  <td><input data-op-field="note" value="${escapeHtml(log.note || '')}" placeholder="补充备注"></td>
+                  <td><button data-op-delete="${idx}" class="btn-danger" type="button">删</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          ${(token.operationLogs || []).length ? '' : '<div class="muted" style="margin-top:8px;">暂无操作记录。保存时会自动留存核心参数变更，也可手动补充。</div>'}
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <h3 style="margin-bottom:8px;">币种信息与策略备注</h3>
+          <div class="field-grid-2">
+            <div>
+              <label class="field-title">关键时间节点</label>
+              <input id="keyDateInput" type="date" value="${escapeHtml(token.keyDate || '')}">
+            </div>
+            <div>
+              <label class="field-title">板块标签库（逗号分隔，影响全局）</label>
+              <input id="tagLibraryInput" value="${escapeHtml((state.tagLibrary || []).join(', '))}" placeholder="Meme, AI, DeFi, ...">
+            </div>
+          </div>
+
+          <label class="field-title" style="margin-top:8px;">标签点选</label>
+          <div id="tagSelectWrap" class="chip-row">${renderTagPicker(token.tags || [])}</div>
+          <input id="customTagsInput" style="margin-top:8px;" value="${escapeHtml((token.tags || []).join(', '))}" placeholder="也可直接输入标签，逗号分隔">
+
+          <label class="field-title" style="margin-top:8px;">基本面分析</label>
+          <textarea id="fundamentalsInput" placeholder="写核心逻辑、行业位置、团队与叙事">${escapeHtml(token.fundamentals || '')}</textarea>
+
+          <label class="field-title" style="margin-top:8px;">操作策略</label>
+          <textarea id="strategyInput" placeholder="写仓位节奏、风控边界、减仓与止盈计划">${escapeHtml(token.strategy || '')}</textarea>
+        </div>
+      `;
+
+      // 简化模式：隐藏价格线与操作时间线，仅保留交易台账。
+      const linePanel = document.getElementById('addLineBtn')?.closest('.panel');
+      if (linePanel) linePanel.remove();
+      const opPanel = document.getElementById('addOpLogBtn')?.closest('.panel');
+      if (opPanel) opPanel.remove();
+      const tagLibInput = document.getElementById('tagLibraryInput');
+      if (tagLibInput) {
+        const row = tagLibInput.closest('div');
+        if (row) row.remove();
+      }
+      const tagSelectWrap = document.getElementById('tagSelectWrap');
+      if (tagSelectWrap) {
+        const label = tagSelectWrap.previousElementSibling;
+        if (label && label.tagName === 'LABEL') label.remove();
+        tagSelectWrap.remove();
+      }
+      const customTagsInput = document.getElementById('customTagsInput');
+      if (customTagsInput) customTagsInput.remove();
+      const strategyInput = document.getElementById('strategyInput');
+      if (strategyInput) {
+        const label = strategyInput.previousElementSibling;
+        if (label && label.tagName === 'LABEL') label.remove();
+        strategyInput.remove();
+      }
+      const infoPanel = document.getElementById('keyDateInput')?.closest('.panel');
+      if (infoPanel) {
+        const title = infoPanel.querySelector('h3');
+        if (title) title.textContent = '币种信息（简化）';
+        const funda = document.getElementById('fundamentalsInput');
+        const fundaLabel = funda ? funda.previousElementSibling : null;
+        if (fundaLabel && fundaLabel.tagName === 'LABEL') fundaLabel.textContent = '相关解释';
+      }
+
+      const presetLineBtn = document.getElementById('addPresetLineBtn');
+      if (presetLineBtn && !document.getElementById('generate4hLinesBtn')) {
+        presetLineBtn.insertAdjacentHTML('afterend', '<button id="generate4hLinesBtn" class="btn-primary" type="button">一键生成4H压力/支撑线</button>');
+      }
+
+      bindEditorEvents();
+    }
+
+    function renderLinePositionChip(linePos) {
+      const lower = linePos.lower ? `${linePos.lower.name}(${fmt(linePos.lower.price, 8)})` : '无';
+      const upper = linePos.upper ? `${linePos.upper.name}(${fmt(linePos.upper.price, 8)})` : '无';
+      if (linePos.zone === 'between') {
+        return `<span class="chip ok">当前价位于：${lower} → ${upper}，区间进度 ${fmt(linePos.progressPct, 2)}%</span>`;
+      }
+      if (linePos.zone === 'below_all') {
+        return `<span class="chip warn">当前价低于所有价格线，最近上方线：${upper}</span>`;
+      }
+      if (linePos.zone === 'above_all') {
+        return `<span class="chip danger">当前价高于所有价格线，最近下方线：${lower}</span>`;
+      }
+      return `<span class="chip">当前价命中价格线：${lower}</span>`;
+    }
+
+    function renderTagPicker(selectedTags) {
+      const selected = new Set(selectedTags || []);
+      const lib = (state.tagLibrary || []).length ? state.tagLibrary : DEFAULT_TAG_LIBRARY;
+      return lib.map(tag => {
+        const active = selected.has(tag);
+        const cls = active ? 'chip ok' : 'chip';
+        return `<button type="button" data-tag-btn="${escapeAttr(tag)}" class="${cls}">${escapeHtml(tag)}</button>`;
+      }).join('');
+    }
+
+    function bindEditorEvents() {
+      const token = getActiveToken();
+      if (!token) return;
+
+      const updateSimple = () => {
+        token.symbol = (document.getElementById('tokenSymbolInput').value || '').trim().toUpperCase();
+        token.sectorTag = (document.getElementById('sectorTagInput').value || '').trim();
+        token.recommendationTime = (document.getElementById('recommendationTimeInput').value || '').trim();
+        token.currentStatus = (document.getElementById('currentStatusInput').value || '').trim();
+        token.assetType = document.getElementById('assetTypeInput').value === 'onchain' ? 'onchain' : 'binance';
+        token.chainId = document.getElementById('chainIdInput').value || '56';
+        token.contractAddress = (document.getElementById('contractInput').value || '').trim();
+        token.maxPositionPct = Number(document.getElementById('maxPositionInput').value || 0);
+        const confirmedAvgCostRaw = Number(document.getElementById('confirmedAvgCostInput').value || 0);
+        token.confirmedAvgCost = Number.isFinite(confirmedAvgCostRaw) && confirmedAvgCostRaw > 0 ? confirmedAvgCostRaw : null;
+        token.allocationPlan = (document.getElementById('allocationPlanInput').value || '').trim();
+        token.expectedHoldingPeriod = (document.getElementById('expectedHoldingPeriodInput').value || '').trim();
+        const targetPriceRaw = Number(document.getElementById('targetPriceInput').value || 0);
+        token.targetPrice = Number.isFinite(targetPriceRaw) && targetPriceRaw > 0 ? targetPriceRaw : null;
+        const targetMcapRaw = Number(document.getElementById('targetMcapInput').value || 0);
+        token.targetMcap = Number.isFinite(targetMcapRaw) && targetMcapRaw > 0 ? targetMcapRaw : null;
+        token.resultTag = (document.getElementById('resultTagInput').value || '').trim();
+        token.closedAt = (document.getElementById('closedAtInput').value || '').trim();
+        token.twitterUrl = (document.getElementById('twitterInput').value || '').trim();
+        token.keyDate = (document.getElementById('keyDateInput')?.value || '').trim();
+        token.fundamentals = document.getElementById('fundamentalsInput')?.value || '';
+        token.strategy = token.fundamentals;
+        const tagLibraryText = document.getElementById('tagLibraryInput')?.value || '';
+        if (tagLibraryText) {
+          state.tagLibrary = normalizeTagArray(tagLibraryText);
+        }
+        const customTagsText = document.getElementById('customTagsInput')?.value || '';
+        if (customTagsText) {
+          token.tags = normalizeTagArray(customTagsText);
+        }
+        renderTokenList();
+      };
+
+      [
+        'tokenSymbolInput', 'sectorTagInput', 'recommendationTimeInput', 'currentStatusInput', 'assetTypeInput', 'chainIdInput', 'contractInput', 'maxPositionInput', 'confirmedAvgCostInput',
+        'allocationPlanInput', 'expectedHoldingPeriodInput', 'targetPriceInput', 'targetMcapInput', 'resultTagInput', 'closedAtInput',
+        'twitterInput', 'keyDateInput', 'fundamentalsInput', 'strategyInput',
+        'tagLibraryInput', 'customTagsInput'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', updateSimple);
+        el.addEventListener('change', updateSimple);
+      });
+
+      document.querySelectorAll('[data-tag-btn]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tag = btn.getAttribute('data-tag-btn');
+          const set = new Set(token.tags || []);
+          if (set.has(tag)) set.delete(tag); else set.add(tag);
+          token.tags = [...set];
+          document.getElementById('customTagsInput').value = token.tags.join(', ');
+          renderEditor();
+        });
+      });
+
+      const lineBody = document.getElementById('priceLineBody');
+      if (lineBody) {
+        lineBody.addEventListener('input', event => {
+          const row = event.target.closest('tr[data-line-index]');
+          if (!row) return;
+          const idx = Number(row.getAttribute('data-line-index'));
+          const field = event.target.getAttribute('data-line-field');
+          if (!Number.isInteger(idx) || !field || !token.priceLines[idx]) return;
+          if (field === 'price') token.priceLines[idx].price = Number(event.target.value || 0);
+          else token.priceLines[idx][field] = event.target.value || '';
+        });
+        lineBody.addEventListener('change', event => {
+          const row = event.target.closest('tr[data-line-index]');
+          if (!row) return;
+          const idx = Number(row.getAttribute('data-line-index'));
+          const field = event.target.getAttribute('data-line-field');
+          if (!Number.isInteger(idx) || !field || !token.priceLines[idx]) return;
+          if (field === 'type') {
+            token.priceLines[idx].type = event.target.value || 'custom';
+            if (token.priceLines[idx].type !== 'custom') {
+              const preset = PRESET_LINES.find(item => item.value === token.priceLines[idx].type);
+              token.priceLines[idx].name = preset ? preset.label : token.priceLines[idx].name;
+            }
+            renderEditor();
+          }
+        });
+      }
+
+      document.querySelectorAll('[data-line-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-line-delete'));
+          if (!Number.isInteger(idx)) return;
+          token.priceLines.splice(idx, 1);
+          renderEditor();
+        });
+      });
+
+      const tradeBody = document.getElementById('tradeBody');
+      if (tradeBody) {
+        tradeBody.addEventListener('input', event => {
+          const row = event.target.closest('tr[data-trade-index]');
+          if (!row) return;
+          const idx = Number(row.getAttribute('data-trade-index'));
+          const field = event.target.getAttribute('data-trade-field');
+          if (!Number.isInteger(idx) || !field || !token.trades[idx]) return;
+          if (['quantity', 'price', 'fee'].includes(field)) token.trades[idx][field] = Number(event.target.value || 0);
+          else token.trades[idx][field] = event.target.value || '';
+          renderTokenList();
+        });
+      }
+
+      document.querySelectorAll('[data-trade-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-trade-delete'));
+          if (!Number.isInteger(idx)) return;
+          token.trades.splice(idx, 1);
+          renderEditor();
+        });
+      });
+
+      const opLogBody = document.getElementById('opLogBody');
+      if (opLogBody) {
+        opLogBody.addEventListener('input', event => {
+          const row = event.target.closest('tr[data-op-index]');
+          if (!row) return;
+          const idx = Number(row.getAttribute('data-op-index'));
+          const field = event.target.getAttribute('data-op-field');
+          if (!Number.isInteger(idx) || !field || !token.operationLogs[idx]) return;
+          if (field === 'price') {
+            const v = Number(event.target.value || 0);
+            token.operationLogs[idx][field] = Number.isFinite(v) && v > 0 ? v : null;
+          } else {
+            token.operationLogs[idx][field] = event.target.value || '';
+          }
+        });
+      }
+
+      document.querySelectorAll('[data-op-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-op-delete'));
+          if (!Number.isInteger(idx)) return;
+          token.operationLogs.splice(idx, 1);
+          renderEditor();
+        });
+      });
+
+      const addLineBtn = document.getElementById('addLineBtn');
+      if (addLineBtn) {
+        addLineBtn.addEventListener('click', () => {
+          token.priceLines.push({
+            id: uid('line'),
+            type: 'custom',
+            name: '自定义价格线',
+            price: 0
+          });
+          renderEditor();
+        });
+      }
+
+      const addPresetLineBtn = document.getElementById('addPresetLineBtn');
+      if (addPresetLineBtn) {
+        addPresetLineBtn.addEventListener('click', () => {
+          const exists = new Set((token.priceLines || []).map(line => line.type));
+          for (const line of PRESET_LINES) {
+            if (line.value === 'custom') continue;
+            if (exists.has(line.value)) continue;
+            token.priceLines.push({
+              id: uid('line'),
+              type: line.value,
+              name: line.label,
+              price: 0
+            });
+          }
+          renderEditor();
+        });
+      }
+
+      const generate4hBtn = document.getElementById('generate4hLinesBtn');
+      if (generate4hBtn) {
+        generate4hBtn.addEventListener('click', async () => {
+          await generate4hTechnicalLines(token);
+        });
+      }
+
+      const matchRecPriceBtn = document.getElementById('matchRecPriceBtn');
+      if (matchRecPriceBtn) {
+        matchRecPriceBtn.addEventListener('click', async () => {
+          await matchRecommendationPriceForToken(token);
+        });
+      }
+
+      document.getElementById('addTradeBtn').addEventListener('click', () => {
+        token.trades.push({
+          id: uid('trade'),
+          date: new Date().toISOString().slice(0, 10),
+          side: 'buy',
+          quantity: 0,
+          price: 0,
+          fee: 0,
+          note: ''
+        });
+        renderEditor();
+      });
+
+      const addOpLogBtn = document.getElementById('addOpLogBtn');
+      if (addOpLogBtn) {
+        addOpLogBtn.addEventListener('click', () => {
+          token.operationLogs = Array.isArray(token.operationLogs) ? token.operationLogs : [];
+          token.operationLogs.unshift({
+            id: uid('op'),
+            timestamp: new Date().toISOString(),
+            action: '手动记录',
+            price: null,
+            reason: '',
+            note: ''
+          });
+          renderEditor();
+        });
+      }
+
+      document.getElementById('cloneTokenBtn').addEventListener('click', () => {
+        const clone = JSON.parse(JSON.stringify(token));
+        clone.id = uid('token');
+        clone.symbol = clone.symbol ? `${clone.symbol}_COPY` : '';
+        clone.priceLines = (clone.priceLines || []).map(line => ({ ...line, id: uid('line') }));
+        clone.trades = (clone.trades || []).map(trade => ({ ...trade, id: uid('trade') }));
+        state.tokens.push(clone);
+        activeTokenId = clone.id;
+        renderTokenList();
+        renderEditor();
+      });
+
+      document.getElementById('deleteTokenBtn').addEventListener('click', () => {
+        if (!confirm('确定删除当前代币吗？')) return;
+        const idx = state.tokens.findIndex(item => item.id === token.id);
+        if (idx < 0) return;
+        state.tokens.splice(idx, 1);
+        delete metricsById[token.id];
+        activeTokenId = state.tokens.length ? state.tokens[0].id : null;
+        renderTokenList();
+        renderEditor();
+      });
+    }
+
+    function normalizeTagArray(input) {
+      if (Array.isArray(input)) {
+        return [...new Set(input.map(item => String(item || '').trim()).filter(Boolean))];
+      }
+      return [...new Set(String(input || '').split(',').map(item => item.trim()).filter(Boolean))];
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str).replaceAll('"', '&quot;');
+    }
+
+    function syncEditorToState() {
+      const token = getActiveToken();
+      if (!token) return;
+      const read = (id) => document.getElementById(id)?.value ?? '';
+
+      token.symbol = String(read('tokenSymbolInput')).trim().toUpperCase();
+      token.sectorTag = String(read('sectorTagInput')).trim();
+      token.recommendationTime = String(read('recommendationTimeInput')).trim();
+      token.currentStatus = String(read('currentStatusInput')).trim();
+      token.assetType = read('assetTypeInput') === 'onchain' ? 'onchain' : 'binance';
+      token.chainId = String(read('chainIdInput') || '56').trim();
+      token.contractAddress = String(read('contractInput')).trim();
+      token.maxPositionPct = Number(read('maxPositionInput') || 0);
+
+      const confirmedAvgCostRaw = Number(read('confirmedAvgCostInput') || 0);
+      token.confirmedAvgCost = Number.isFinite(confirmedAvgCostRaw) && confirmedAvgCostRaw > 0
+        ? confirmedAvgCostRaw
+        : null;
+
+      token.allocationPlan = String(read('allocationPlanInput')).trim();
+      token.expectedHoldingPeriod = String(read('expectedHoldingPeriodInput')).trim();
+
+      const targetPriceRaw = Number(read('targetPriceInput') || 0);
+      token.targetPrice = Number.isFinite(targetPriceRaw) && targetPriceRaw > 0 ? targetPriceRaw : null;
+      const targetMcapRaw = Number(read('targetMcapInput') || 0);
+      token.targetMcap = Number.isFinite(targetMcapRaw) && targetMcapRaw > 0 ? targetMcapRaw : null;
+
+      token.resultTag = String(read('resultTagInput')).trim();
+      token.closedAt = String(read('closedAtInput')).trim();
+      token.twitterUrl = String(read('twitterInput')).trim();
+      token.keyDate = String(read('keyDateInput')).trim();
+      token.fundamentals = String(read('fundamentalsInput'));
+      token.strategy = token.fundamentals;
+
+      const tagLibraryText = String(read('tagLibraryInput'));
+      if (tagLibraryText) state.tagLibrary = normalizeTagArray(tagLibraryText);
+      const customTagsText = String(read('customTagsInput'));
+      if (customTagsText) token.tags = normalizeTagArray(customTagsText);
+    }
+
+    function prepareSaveData() {
+      return {
+        tagLibrary: normalizeTagArray(state.tagLibrary),
+        tokens: state.tokens.map(token => stripRuntimeToken(token))
+      };
+    }
+
+    async function loadData() {
+      const adminPassword = saveLocalPassword();
+      if (!adminPassword) {
+        setStatus('请先输入管理密码', 'error');
+        return;
+      }
+
+      setStatus('正在读取仓位管理数据...');
+      try {
+        const resp = await fetch(`/api/admin/portfolio-manager?adminPassword=${encodeURIComponent(adminPassword)}`);
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '读取失败', 'error');
+          return;
+        }
+        const data = result.data || {};
+        state.tagLibrary = normalizeTagArray(data.tagLibrary || DEFAULT_TAG_LIBRARY);
+        state.tokens = Array.isArray(data.tokens) ? data.tokens.map(item => stripRuntimeToken(item)) : [];
+
+        metricsById = {};
+        (data.tokens || []).forEach(item => {
+          metricsById[item.id] = {
+            currentPrice: item.currentPrice,
+            currentValue: item.currentValue,
+            pnlPct: item.pnlPct,
+            ratioMetrics: item.ratioMetrics || null,
+            priceLinePosition: item.priceLinePosition || null,
+            tradeMetrics: item.tradeMetrics || null,
+            holdingMetrics: item.holdingMetrics || null
+          };
+        });
+
+        if (!state.tokens.length) {
+          const first = buildEmptyToken();
+          state.tokens.push(first);
+          activeTokenId = first.id;
+        } else if (!state.tokens.some(item => item.id === activeTokenId)) {
+          activeTokenId = state.tokens[0].id;
+        }
+
+        renderTokenList();
+        renderEditor();
+        setStatus(`读取成功：${state.tokens.length} 个代币`, 'ok');
+      } catch (error) {
+        setStatus(error.message || '读取失败', 'error');
+      }
+    }
+
+    async function saveData({ reload = false } = {}) {
+      const adminPassword = saveLocalPassword();
+      if (!adminPassword) {
+        setStatus('请先输入管理密码', 'error');
+        return;
+      }
+
+      const payload = prepareSaveData();
+      setStatus('正在保存仓位管理数据...');
+      try {
+        const resp = await fetch('/api/admin/portfolio-manager', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminPassword,
+            data: payload
+          })
+        });
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '保存失败', 'error');
+          return;
+        }
+        setStatus(`保存成功：${result.count || 0} 个代币`, 'ok');
+        if (reload) {
+          await loadData();
+        }
+      } catch (error) {
+        setStatus(error.message || '保存失败', 'error');
+      }
+    }
+
+    function addToken() {
+      const token = buildEmptyToken();
+      state.tokens.push(token);
+      activeTokenId = token.id;
+      renderTokenList();
+      renderEditor();
+    }
+
+    async function generate4hTechnicalLines(token) {
+      const adminPassword = saveLocalPassword();
+      if (!adminPassword) {
+        setStatus('请先输入管理密码', 'error');
+        return;
+      }
+      if (!token || !String(token.symbol || '').trim()) {
+        setStatus('请先填写代币 Symbol', 'error');
+        return;
+      }
+
+      syncEditorToState();
+      setStatus(`正在分析 ${token.symbol} 的 4H K线...`);
+      try {
+        const resp = await fetch('/api/admin/portfolio-manager/technical-lines', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminPassword,
+            token: stripRuntimeToken(token)
+          })
+        });
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '4H 技术位生成失败', 'error');
+          return;
+        }
+
+        const manualLines = (token.priceLines || []).filter(line => {
+          const name = String(line.name || '');
+          const type = String(line.type || '');
+          return !(type === 'k4h_resistance' || type === 'k4h_support' || name.startsWith('4H压力位') || name.startsWith('4H支撑位'));
+        });
+        const generatedLines = (result.lines || []).map(line => ({
+          id: uid('line'),
+          type: line.type || 'custom',
+          name: line.name || '4H技术位',
+          price: Number(line.price || 0)
+        })).filter(line => line.price > 0);
+
+        token.priceLines = [...manualLines, ...generatedLines];
+        setStatus(`已生成 ${generatedLines.length} 条4H技术位：${result.pair || token.symbol} / ${result.source || '-'}`, 'ok');
+        renderEditor();
+      } catch (error) {
+        setStatus(error.message || '4H 技术位生成失败', 'error');
+      }
+    }
+
+    async function matchRecommendationPriceForToken(token) {
+      const adminPassword = saveLocalPassword();
+      if (!adminPassword) {
+        setStatus('请先输入管理密码', 'error');
+        return;
+      }
+      if (!token || !String(token.symbol || '').trim()) {
+        setStatus('请先填写代币 Symbol', 'error');
+        return;
+      }
+      if (!String(token.recommendationTime || '').trim()) {
+        setStatus('请先填写喊单时间', 'error');
+        return;
+      }
+
+      syncEditorToState();
+      setStatus(`正在匹配 ${token.symbol} 在喊单时间的价格...`);
+      try {
+        const resp = await fetch('/api/admin/portfolio-manager/recommendation-price', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminPassword,
+            token: stripRuntimeToken(token)
+          })
+        });
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '喊单时间价格匹配失败', 'error');
+          return;
+        }
+
+        const matchedPrice = Number(result.price || 0);
+        if (!(Number.isFinite(matchedPrice) && matchedPrice > 0)) {
+          setStatus('匹配成功但价格无效', 'error');
+          return;
+        }
+
+        token.confirmedAvgCost = matchedPrice;
+        const input = document.getElementById('confirmedAvgCostInput');
+        if (input) input.value = String(matchedPrice);
+        renderTokenList();
+        setStatus(`已匹配喊单价 ${fmt(matchedPrice, 8)}（${result.source || '-'}，偏差 ${fmt(result.diffMinutes || 0, 2)} 分钟）`, 'ok');
+      } catch (error) {
+        setStatus(error.message || '喊单时间价格匹配失败', 'error');
+      }
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadData);
+    document.getElementById('saveBtn').addEventListener('click', () => saveData({ reload: false }));
+    document.getElementById('saveRefreshBtn').addEventListener('click', () => saveData({ reload: true }));
+    document.getElementById('addTokenBtn').addEventListener('click', addToken);
+
+    renderTokenList();
+    if (adminPasswordInput.value && adminPasswordInput.value.trim()) {
+      loadData();
+    } else {
+      setStatus('请输入后台密码后自动读取（仅首次需要手动输入）。');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓位管理看板</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #131c2f;
+      --line: #2c3c62;
+      --text: #ecf2ff;
+      --muted: #9caed5;
+      --accent: #f0b90b;
+      --ok: #17c57e;
+      --danger: #ff6b6b;
+      --info: #66b6ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #0b1220 0%, #0f1a32 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(19, 28, 47, 0.95);
+      padding: 14px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    h1, h2, h3 { margin: 0; line-height: 1.3; }
+    .muted { color: var(--muted); font-size: 13px; }
+    button {
+      border: 1px solid #d7ab22;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #1f1809;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+    .status { min-height: 20px; margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .status.ok { color: var(--ok); }
+    .status.error { color: var(--danger); }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .summary-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      padding: 10px;
+    }
+    .summary-label { color: var(--muted); font-size: 11px; }
+    .summary-value { margin-top: 4px; font-size: 18px; font-weight: 800; }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      min-width: 1500px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 8px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #182440;
+      color: var(--muted);
+      font-size: 11px;
+      z-index: 2;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      border: 1px solid rgba(102, 182, 255, 0.35);
+      color: #cae7ff;
+      background: rgba(102, 182, 255, 0.12);
+      padding: 2px 7px;
+      margin: 2px 4px 0 0;
+      font-size: 11px;
+    }
+    .green { color: var(--ok); font-weight: 700; }
+    .red { color: var(--danger); font-weight: 700; }
+    .line-box {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      padding: 6px 8px;
+      min-width: 260px;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .staff-chart {
+      position: relative;
+      margin-top: 6px;
+      height: 168px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: linear-gradient(180deg, rgba(9, 17, 32, 0.92) 0%, rgba(12, 24, 44, 0.72) 100%);
+      overflow: hidden;
+      padding: 8px 8px;
+    }
+    .staff-line {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      border-top: 1px solid rgba(160, 198, 255, 0.55);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+    .staff-line .line-name {
+      transform: translateY(-13px);
+      font-size: 10px;
+      color: #d2e8ff;
+      background: rgba(11, 22, 39, 0.9);
+      padding: 0 4px;
+      border-radius: 4px;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .staff-line .line-price {
+      transform: translateY(-13px);
+      font-size: 10px;
+      color: #95c8ff;
+      background: rgba(11, 22, 39, 0.9);
+      padding: 0 4px;
+      border-radius: 4px;
+      font-family: Consolas, Menlo, Monaco, monospace;
+    }
+    .staff-line.resistance.near { border-top-color: rgba(54, 211, 153, 0.45); }
+    .staff-line.resistance.key { border-top-color: rgba(34, 197, 94, 0.68); }
+    .staff-line.resistance.strong { border-top-color: rgba(22, 163, 74, 0.92); }
+    .staff-line.support.near { border-top-color: rgba(248, 113, 113, 0.45); }
+    .staff-line.support.key { border-top-color: rgba(239, 68, 68, 0.7); }
+    .staff-line.support.strong { border-top-color: rgba(185, 28, 28, 0.94); }
+    .staff-line.resistance .line-name,
+    .staff-line.resistance .line-price { color: #bbf7d0; }
+    .staff-line.support .line-name,
+    .staff-line.support .line-price { color: #fecaca; }
+    .line-guide {
+      margin-top: 6px;
+      max-width: 420px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+      text-align: left;
+      font-weight: 500;
+    }
+    .staff-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #f0b90b;
+      border: 2px solid rgba(255,255,255,0.9);
+      box-shadow: 0 0 0 5px rgba(240, 185, 11, 0.16);
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    .staff-dot-label {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -22px);
+      font-size: 10px;
+      color: #ffe8a3;
+      background: rgba(35, 28, 12, 0.9);
+      border: 1px solid rgba(240, 185, 11, 0.55);
+      border-radius: 999px;
+      padding: 1px 6px;
+      white-space: nowrap;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      z-index: 4;
+    }
+    .staff-tip {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .mono {
+      font-family: Consolas, Menlo, Monaco, monospace;
+      letter-spacing: 0.2px;
+    }
+    .copy-btn {
+      margin-top: 6px;
+      border: 1px solid rgba(159, 208, 255, 0.45);
+      border-radius: 8px;
+      background: rgba(102, 182, 255, 0.14);
+      color: #d8ecff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background: rgba(102, 182, 255, 0.22);
+    }
+    .line-action-btn {
+      margin-top: 8px;
+      width: 100%;
+      border: 1px solid rgba(240, 185, 11, 0.42);
+      border-radius: 8px;
+      background: rgba(240, 185, 11, 0.12);
+      color: #ffe7a6;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 8px;
+    }
+    .details {
+      margin-top: 6px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      max-width: 360px;
+      color: #d6e2ff;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: #f3df9b;
+    }
+    .battle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .battle-group-title {
+      margin: 10px 0 8px;
+      font-size: 13px;
+      color: #9ecfff;
+      letter-spacing: 0.5px;
+    }
+    .fund-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(30, 201, 127, 0.45);
+      background: rgba(30, 201, 127, 0.14);
+      color: #bff5dc;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .nonfund-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(255, 184, 77, 0.45);
+      background: rgba(255, 184, 77, 0.12);
+      color: #ffdfad;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .battle-card {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      overflow: hidden;
+    }
+    .battle-card h3 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1;
+      color: #f0b90b;
+      letter-spacing: 0.3px;
+    }
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--muted);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 8px;
+      align-items: center;
+    }
+    .kv b { color: var(--text); font-weight: 700; text-align: right; }
+    .roi-big {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: 0.3px;
+      text-align: right;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      white-space: nowrap;
+    }
+    .contract-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.12);
+      margin-top: 2px;
+    }
+    .contract-short {
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: 14px;
+      color: #cfe4ff;
+      letter-spacing: 0.2px;
+    }
+    .timeline-wrap { display: grid; gap: 8px; max-height: 420px; overflow: auto; }
+    .timeline-item {
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      padding: 9px 10px;
+      display: grid;
+      gap: 4px;
+    }
+    .timeline-head { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:#f3df9b; }
+    .review-stats {
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .stat-box { border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px; background:rgba(255,255,255,0.02);}
+    .stat-box .k{font-size:11px;color:var(--muted);}
+    .stat-box .v{font-size:16px;font-weight:800;margin-top:3px;}
+    @media (max-width: 1100px) {
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .battle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .review-stats { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 10px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .battle-grid { grid-template-columns: 1fr; }
+      .review-stats { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="topbar">
+        <div>
+          <h1 style="color:#f0b90b;">仓位管理看板（前台展示）</h1>
+          <p class="muted" style="margin-top:4px;">只展示关键数据，不在本页编辑；后台改完数据后，点刷新即可生效。</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <a href="/" style="color:#9fd0ff;text-decoration:none;font-size:13px;">返回首页</a>
+          <button id="refreshBtn">刷新数据</button>
+        </div>
+      </div>
+      <div id="status" class="status">等待刷新</div>
+    </div>
+
+    <div class="panel">
+      <div id="summary" class="summary-grid"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">第一层：当前作战清单</h2>
+      <div style="margin-bottom:10px;">
+        <button id="clearBattleCardsBtn" type="button">清空当前作战清单</button>
+      </div>
+      <div id="battleList"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">第二层：操作记录时间线</h2>
+      <div id="timelineList" class="timeline-wrap"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">第三层：历史推荐复盘库</h2>
+      <div id="reviewStats" class="review-stats"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>代币</th>
+              <th>赛道标签</th>
+              <th>推荐时间</th>
+              <th>结束时间</th>
+              <th>结果标签</th>
+              <th>收益率%</th>
+              <th>持有天数</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="font-size:16px;">大表格总览</h2>
+      <p class="muted" style="margin-top:4px;">展示手工维护字段 + 当前价格，不展示系统自动计算的仓位/价值参数。</p>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>代币</th>
+              <th>类型/链</th>
+              <th>来源</th>
+              <th>赛道标签</th>
+              <th>当前价格</th>
+              <th>买入价</th>
+              <th>收益率%</th>
+              <th>仓位上限%</th>
+              <th>推荐时间</th>
+              <th>关键日期</th>
+              <th>标签</th>
+              <th>合约地址</th>
+              <th>基本面分析</th>
+              <th>操作策略</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const summaryEl = document.getElementById('summary');
+    const tableBodyEl = document.getElementById('tableBody');
+    const battleListEl = document.getElementById('battleList');
+    const clearBattleCardsBtn = document.getElementById('clearBattleCardsBtn');
+    const timelineListEl = document.getElementById('timelineList');
+    const reviewStatsEl = document.getElementById('reviewStats');
+    const historyBodyEl = document.getElementById('historyBody');
+    if (timelineListEl) {
+      const panel = timelineListEl.closest('.panel');
+      if (panel) panel.remove();
+    }
+    let latestPortfolioData = null;
+    let selectedBattleIds = [];
+    const BATTLE_IDS_STORAGE_KEY = 'portfolioBattleSelectedIds';
+    try {
+      const saved = JSON.parse(localStorage.getItem(BATTLE_IDS_STORAGE_KEY) || '[]');
+      if (Array.isArray(saved)) selectedBattleIds = saved.map(v => String(v || '')).filter(Boolean);
+    } catch (error) {}
+
+    function fmt(value, digits = 4) {
+      if (!Number.isFinite(Number(value))) return '-';
+      return Number(value).toLocaleString('en-US', { maximumFractionDigits: digits });
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+      statusEl.textContent = message;
+    }
+
+    function toZhTime(value) {
+      const ms = Date.parse(String(value || ''));
+      if (!Number.isFinite(ms)) return '-';
+      return new Date(ms).toLocaleString('zh-CN', { hour12: false });
+    }
+
+    function getBuyPrice(token) {
+      const confirmed = Number(token?.confirmedAvgCost || 0);
+      if (Number.isFinite(confirmed) && confirmed > 0) return confirmed;
+      const avgCost = Number(token?.tradeMetrics?.avgCost || 0);
+      if (Number.isFinite(avgCost) && avgCost > 0) return avgCost;
+      return null;
+    }
+
+    function getComputedRoiPct(token) {
+      const buyPrice = getBuyPrice(token);
+      const currentPrice = Number(token?.currentPrice || 0);
+      if (!(Number.isFinite(currentPrice) && currentPrice > 0 && Number.isFinite(buyPrice) && buyPrice > 0)) {
+        return null;
+      }
+      return ((currentPrice - buyPrice) / buyPrice) * 100;
+    }
+
+    function renderBattleList(data) {
+      const allTokens = Array.isArray(data.tokens) ? data.tokens : [];
+      const selectedSet = new Set(selectedBattleIds);
+      const tokens = allTokens.filter(item => selectedSet.has(String(item.id || item.symbol || '')));
+      if (!tokens.length) {
+        battleListEl.innerHTML = '<div class="muted">当前保持空白。请在下方大表中点击“加入清单”逐个拉取。</div>';
+        return;
+      }
+      const ordered = tokens.slice().sort((a, b) => Number(b.currentValue || 0) - Number(a.currentValue || 0));
+      const shortAddr = (value) => {
+        const text = String(value || '').trim();
+        if (!text) return '-';
+        if (text.length <= 16) return text;
+        return `${text.slice(0, 8)}...${text.slice(-8)}`;
+      };
+
+      const renderCards = (list) => list.map(item => {
+        const recTimeText = toZhTime(item.recommendationTime);
+        const buyPrice = getBuyPrice(item);
+        const roi = getComputedRoiPct(item);
+        const roiClass = Number.isFinite(roi) ? (roi >= 0 ? 'green' : 'red') : '';
+        const roiText = Number.isFinite(roi) ? `${roi >= 0 ? '+' : ''}${fmt(roi, 2)}%` : '-';
+        const contract = String(item.contractAddress || '').trim();
+        return `
+          <div class="battle-card">
+            <div class="card-head">
+              <h3>${escapeHtml(item.symbol || '-')}</h3>
+              <span class="nonfund-badge">喊单观察</span>
+            </div>
+            <div class="kv"><span>推荐时间</span><b>${recTimeText}</b></div>
+            <div class="kv"><span>买入价</span><b>${buyPrice == null ? '-' : fmt(buyPrice, 8)}</b></div>
+            <div class="kv"><span>收益率</span><b class="roi-big ${roiClass}">${roiText}</b></div>
+            <div class="kv"><span>合约</span><span class="contract-short">${escapeHtml(shortAddr(contract))}</span></div>
+            ${contract ? `<div class="contract-row"><span class="muted">点击复制完整地址</span><button type="button" class="copy-btn" data-copy-contract="${escapeHtml(contract)}">复制</button></div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      battleListEl.innerHTML = `<div class="battle-grid">${renderCards(ordered)}</div>`;
+    }
+
+    function renderTimeline(data) {
+      const tokens = Array.isArray(data.tokens) ? data.tokens : [];
+      const rows = [];
+      tokens.forEach(token => {
+        (Array.isArray(token.operationLogs) ? token.operationLogs : []).forEach(log => {
+          rows.push({
+            symbol: token.symbol || '-',
+            sectorTag: token.sectorTag || '',
+            timestamp: log.timestamp || '',
+            action: log.action || '更新',
+            price: log.price,
+            reason: log.reason || '',
+            note: log.note || ''
+          });
+        });
+      });
+      rows.sort((a, b) => Date.parse(b.timestamp || 0) - Date.parse(a.timestamp || 0));
+      const top = rows.slice(0, 120);
+      if (!top.length) {
+        timelineListEl.innerHTML = '<div class="muted">暂无操作记录。</div>';
+        return;
+      }
+      timelineListEl.innerHTML = top.map(item => `
+        <div class="timeline-item">
+          <div class="timeline-head"><span>${escapeHtml(item.symbol)} · ${escapeHtml(item.sectorTag || '-')}</span><span>${toZhTime(item.timestamp)}</span></div>
+          <div class="muted">动作：${escapeHtml(item.action)} ${item.price ? `| 价格：${fmt(item.price,8)}` : ''}</div>
+          <div style="font-size:12px;">原因：${escapeHtml(item.reason || '-')}</div>
+          <div class="muted">备注：${escapeHtml(item.note || '-')}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderReview(data) {
+      const tokens = (Array.isArray(data.tokens) ? data.tokens : [])
+        .filter(item => String(item.resultTag || '').trim())
+        .sort((a, b) => String(b.recommendationTime || '').localeCompare(String(a.recommendationTime || '')));
+      const stats = data.reviewStats || {};
+      reviewStatsEl.innerHTML = `
+        <div class="stat-box"><div class="k">已结束标的</div><div class="v">${stats.totalClosed ?? 0}</div></div>
+        <div class="stat-box"><div class="k">命中率</div><div class="v">${stats.hitRate == null ? '-' : fmt(stats.hitRate,2) + '%'}</div></div>
+        <div class="stat-box"><div class="k">平均持有天数</div><div class="v">${stats.avgHoldingDays == null ? '-' : fmt(stats.avgHoldingDays,2)}</div></div>
+        <div class="stat-box"><div class="k">正收益数量</div><div class="v">${stats.pnlDistribution ? stats.pnlDistribution.positive : 0}</div></div>
+        <div class="stat-box"><div class="k">负收益数量</div><div class="v">${stats.pnlDistribution ? stats.pnlDistribution.negative : 0}</div></div>
+      `;
+      if (!tokens.length) {
+        historyBodyEl.innerHTML = '<tr><td colspan="7" class="muted" style="padding:16px;text-align:center;">暂无历史复盘数据。</td></tr>';
+        return;
+      }
+      historyBodyEl.innerHTML = tokens.map(item => {
+        const startMs = Date.parse(String(item.recommendationTime || ''));
+        const endMs = Date.parse(String(item.closedAt || ''));
+        const holdingDays = Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs
+          ? ((endMs - startMs) / (24 * 3600 * 1000))
+          : null;
+        return `<tr>
+          <td>${escapeHtml(item.symbol || '-')}</td>
+          <td>${escapeHtml(item.sectorTag || '-')}</td>
+          <td>${toZhTime(item.recommendationTime)}</td>
+          <td>${toZhTime(item.closedAt)}</td>
+          <td>${escapeHtml(item.resultTag || '-')}</td>
+          <td>${Number.isFinite(getComputedRoiPct(item)) ? fmt(getComputedRoiPct(item),2) + '%' : '-'}</td>
+          <td>${holdingDays == null ? '-' : fmt(holdingDays,2)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderSummary(data) {
+      const tokens = Array.isArray(data.tokens) ? data.tokens : [];
+      const withContract = tokens.filter(item => String(item.contractAddress || '').trim());
+      const withRoi = tokens
+        .map(item => getComputedRoiPct(item))
+        .filter(value => Number.isFinite(value));
+      const avgRoi = withRoi.length
+        ? withRoi.reduce((sum, value) => sum + Number(value), 0) / withRoi.length
+        : null;
+
+      summaryEl.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-label">代币总数</div>
+          <div class="summary-value">${tokens.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">已填合约数</div>
+          <div class="summary-value">${withContract.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">已填关键日期</div>
+          <div class="summary-value">${tokens.filter(item => String(item.keyDate || '').trim()).length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">平均收益率（有成本口径）</div>
+          <div class="summary-value ${avgRoi == null ? '' : (avgRoi >= 0 ? 'green' : 'red')}">${avgRoi == null ? '-' : fmt(avgRoi, 2) + '%'}</div>
+        </div>
+      `;
+    }
+
+    function renderLinePosition(token) {
+      return '-';
+      const actionButton = `<button type="button" class="line-action-btn" data-generate-lines="${escapeHtml(token.id || token.symbol || '')}">生成4H线</button>`;
+      const lines = Array.isArray(token.priceLines) ? token.priceLines
+        .map(line => ({ ...line, price: Number(line.price) }))
+        .filter(line => Number.isFinite(line.price) && line.price > 0)
+        : [];
+      const currentPrice = Number(token.currentPrice);
+
+      if (!lines.length || !(currentPrice > 0)) {
+        return '<div class="line-box">未配置价格线或当前价格不可用</div>';
+      }
+
+      const sorted = [...lines].sort((a, b) => b.price - a.price);
+      const maxPrice = sorted[0].price;
+      const minPrice = sorted[sorted.length - 1].price;
+      const span = Math.max(maxPrice - minPrice, maxPrice * 0.03, 1e-8);
+      const chartTop = 12;
+      const chartBottom = 156;
+      const chartHeight = chartBottom - chartTop;
+      const yFromPrice = (price) => {
+        const ratio = (maxPrice - price) / span;
+        return chartTop + Math.max(0, Math.min(1, ratio)) * chartHeight;
+      };
+
+      const lineHtml = sorted.map(line => {
+        const y = yFromPrice(line.price);
+        const nameText = String(line.name || '');
+        const typeText = String(line.type || '');
+        const textForMatch = nameText + typeText;
+        const isResistance = textForMatch.includes('\u538b\u529b') || textForMatch.includes('\u963b\u529b') || /pressure|resistance/i.test(textForMatch);
+        const isSupport = textForMatch.includes('\u652f\u6491') || /support/i.test(textForMatch);
+        let strength = 'near';
+        if (textForMatch.includes('\u5f3a') || /strong/i.test(textForMatch)) strength = 'strong';
+        else if (textForMatch.includes('\u5173\u952e') || /key/i.test(textForMatch)) strength = 'key';
+        const sideClass = isResistance ? 'resistance' : (isSupport ? 'support' : '');
+        const displayName = isResistance ? nameText.replace(/Pressure|Resistance/ig, '\u538b\u529b').replace(/\u963b\u529b/g, '\u538b\u529b') : (isSupport ? nameText.replace(/Support/ig, '\u652f\u6491') : nameText);
+        return `
+          <div class="staff-line ${sideClass} ${strength}" style="top:${y.toFixed(2)}px;">
+            <span class="line-name">${escapeHtml(displayName || line.type || '\u4ef7\u683c\u7ebf')}</span>
+            <span class="line-price">${fmt(line.price, 8)}</span>
+          </div>
+        `;
+      }).join('');
+      const dotYRaw = yFromPrice(currentPrice);
+      const dotY = Math.max(chartTop, Math.min(chartBottom, dotYRaw));
+      const outOfTop = currentPrice > maxPrice;
+      const outOfBottom = currentPrice < minPrice;
+      let tipText = '';
+      if (outOfTop) tipText = `当前价高于最高线 ${fmt(currentPrice - maxPrice, 8)}`;
+      else if (outOfBottom) tipText = `当前价低于最低线 ${fmt(minPrice - currentPrice, 8)}`;
+      else tipText = '当前价位于线组区间内';
+
+      return `
+        <div class="line-box">
+          <div class="staff-chart">
+            ${lineHtml}
+            <div class="staff-dot" style="top:${dotY.toFixed(2)}px;"></div>
+            <div class="staff-dot-label" style="top:${dotY.toFixed(2)}px;">现价 ${fmt(currentPrice, 8)}</div>
+          </div>
+          <div class="staff-tip">${tipText}</div>
+        </div>
+      `;
+    }
+
+    function renderTable(data) {
+      const tokens = Array.isArray(data.tokens) ? data.tokens : [];
+      if (!tokens.length) {
+        tableBodyEl.innerHTML = '<tr><td colspan="15" class="muted" style="padding:20px;text-align:center;">暂无数据，请去后台新增代币并保存。</td></tr>';
+        return;
+      }
+
+      tableBodyEl.innerHTML = tokens.map(token => {
+        const buyPrice = getBuyPrice(token);
+        const roi = getComputedRoiPct(token);
+        const roiClass = Number.isFinite(roi) ? (roi >= 0 ? 'green' : 'red') : '';
+        const tags = Array.isArray(token.tags) ? token.tags : [];
+        return `
+          <tr>
+            <td class="mono" style="font-weight:800;">${escapeHtml(token.symbol || '-')}</td>
+            <td>${token.assetType === 'onchain' ? '链上' : '币安'} / ${escapeHtml(token.chainId || '-')}</td>
+            <td>${token?.holdingMetrics?.linkedFromFund ? '<span class="fund-badge">基金仓位</span>' : '<span class="nonfund-badge">喊单观察</span>'}</td>
+            <td>${escapeHtml(token.sectorTag || '-')}</td>
+            <td class="mono">${fmt(token.currentPrice, 8)}</td>
+            <td class="mono">${buyPrice == null ? '-' : fmt(buyPrice, 8)}</td>
+            <td class="${roiClass}">${Number.isFinite(roi) ? fmt(roi, 2) + '%' : '-'}</td>
+            <td>${Number(token.maxPositionPct || 0) > 0 ? fmt(token.maxPositionPct, 2) + '%' : '-'}</td>
+            <td>${toZhTime(token.recommendationTime)}</td>
+            <td>${escapeHtml(token.keyDate || '-')}</td>
+            <td>${tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '-'}</td>
+            <td class="mono" style="max-width:220px;word-break:break-all;">
+              ${escapeHtml(token.contractAddress || '-')}
+              ${token.contractAddress ? `<div><button type="button" class="copy-btn" data-copy-contract="${escapeHtml(token.contractAddress)}">复制</button></div>` : ''}
+            </td>
+            <td><div class="details">${escapeHtml(token.fundamentals || '-')}</div></td>
+            <td><div class="details">${escapeHtml(token.strategy || '-')}</div></td>
+            <td><button type="button" class="copy-btn" data-pull-token="${escapeHtml(token.id || token.symbol || '')}">加入清单</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function stripFundTokens(viewData) {
+      const source = viewData && typeof viewData === 'object' ? viewData : {};
+      const tokens = Array.isArray(source.tokens) ? source.tokens : [];
+      const filteredTokens = tokens.filter(token => !Boolean(token?.holdingMetrics?.linkedFromFund));
+      return { ...source, tokens: filteredTokens };
+    }
+
+    async function refreshData() {
+      setStatus('正在刷新数据...');
+      try {
+        const email = String(localStorage.getItem('fundViewEmail') || '').toLowerCase().trim();
+        if (!email) {
+          setStatus('请先在首页完成白名单邮箱登录，再访问本页。', 'error');
+          return;
+        }
+        const resp = await fetch('/api/portfolio-manager?email=' + encodeURIComponent(email));
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '刷新失败', 'error');
+          return;
+        }
+        const data = stripFundTokens(result.data || {});
+        latestPortfolioData = data;
+        renderSummary(data);
+        renderBattleList(data);
+        renderReview(data);
+        renderTable(data);
+        setStatus(`刷新完成：${new Date().toLocaleString('zh-CN')}`, 'ok');
+      } catch (error) {
+        setStatus(error.message || '刷新失败', 'error');
+      }
+    }
+
+    async function copyText(text) {
+      const value = String(text || '').trim();
+      if (!value) return false;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch (error) {}
+      try {
+        const input = document.createElement('input');
+        input.value = value;
+        document.body.appendChild(input);
+        input.select();
+        const ok = document.execCommand('copy');
+        input.remove();
+        return !!ok;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    async function generateTechnicalLinesForToken(tokenId) {
+      if (!latestPortfolioData || !Array.isArray(latestPortfolioData.tokens)) return;
+      const token = latestPortfolioData.tokens.find(item => String(item.id || item.symbol || '') === String(tokenId));
+      if (!token) return;
+      const email = String(localStorage.getItem('fundViewEmail') || '').toLowerCase().trim();
+      if (!email) {
+        setStatus('请先在首页完成白名单邮箱登录，再使用4H线生成。', 'error');
+        return;
+      }
+
+      setStatus(`正在生成 ${token.symbol || '-'} 的4H压力/支撑线...`);
+      try {
+        const resp = await fetch('/api/portfolio-manager/technical-lines?email=' + encodeURIComponent(email), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const result = await resp.json();
+        if (!result.success) {
+          setStatus(result.error || '生成4H线失败', 'error');
+          return;
+        }
+
+        const manualLines = (Array.isArray(token.priceLines) ? token.priceLines : []).filter(line => {
+          const type = String(line.type || '');
+          const name = String(line.name || '');
+          return !(type === 'k4h_resistance' || type === 'k4h_support' || name.startsWith('4H Pressure') || name.startsWith('4H Support'));
+        });
+        const generatedLines = (result.lines || []).map((line, index) => ({
+          id: `runtime_4h_${Date.now()}_${index}`,
+          type: line.type || 'custom',
+          name: line.name || '4H Level',
+          price: Number(line.price || 0)
+        })).filter(line => line.price > 0);
+
+        token.priceLines = [...manualLines, ...generatedLines];
+        renderTable(latestPortfolioData);
+        setStatus(`已生成 ${generatedLines.length} 条4H线：${result.pair || token.symbol} / ${result.source || '-'}`, 'ok');
+      } catch (error) {
+        setStatus(error.message || '生成4H线失败', 'error');
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', refreshData);
+    if (clearBattleCardsBtn) {
+      clearBattleCardsBtn.addEventListener('click', () => {
+        selectedBattleIds = [];
+        localStorage.setItem(BATTLE_IDS_STORAGE_KEY, JSON.stringify(selectedBattleIds));
+        renderBattleList(latestPortfolioData || { tokens: [] });
+      });
+    }
+    tableBodyEl.addEventListener('click', async (event) => {
+      const pullBtn = event.target.closest('[data-pull-token]');
+      if (pullBtn) {
+        const tokenId = String(pullBtn.getAttribute('data-pull-token') || '').trim();
+        if (!tokenId) return;
+        if (!selectedBattleIds.includes(tokenId)) {
+          selectedBattleIds.push(tokenId);
+          localStorage.setItem(BATTLE_IDS_STORAGE_KEY, JSON.stringify(selectedBattleIds));
+        }
+        renderBattleList(latestPortfolioData || { tokens: [] });
+        const prev = pullBtn.textContent;
+        pullBtn.textContent = '已加入';
+        setTimeout(() => { pullBtn.textContent = prev; }, 900);
+        return;
+      }
+      const lineBtn = event.target.closest('[data-generate-lines]');
+      if (lineBtn) {
+        await generateTechnicalLinesForToken(lineBtn.getAttribute('data-generate-lines'));
+        return;
+      }
+      const btn = event.target.closest('[data-copy-contract]');
+      if (!btn) return;
+      const raw = btn.getAttribute('data-copy-contract') || '';
+      const ok = await copyText(raw);
+      if (ok) {
+        const prev = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(() => { btn.textContent = prev; }, 1200);
+      } else {
+        setStatus('复制失败，请手动复制。', 'error');
+      }
+    });
+    refreshData();
+  </script>
+</body>
+</html>

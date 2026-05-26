@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>客户端下载中心</title>
+  <style>
+    :root { --bg:#080b11; --panel:#121821; --border:#263242; --text:#edf2f7; --muted:#9fb0c4; --accent:#f0b90b; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:24px; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--text); background:linear-gradient(180deg,#090d14,#0f1621); }
+    .wrap { max-width: 1000px; margin: 0 auto; }
+    .hero { background:rgba(18,24,33,.96); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:16px; }
+    h1 { margin:0 0 10px; }
+    p { margin:0; color:var(--muted); line-height:1.8; }
+    .actions { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .btn { border-radius:10px; padding:10px 14px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(240,185,11,.35); color:#151515; background:linear-gradient(135deg,#f7e6a5,#f0b90b); }
+    .btn.secondary { color:var(--text); background:#223043; border-color:#2f435b; }
+    .status { min-height:22px; color:var(--muted); margin-bottom:10px; }
+    .list { display:grid; gap:10px; }
+    .card { background:rgba(18,24,33,.96); border:1px solid var(--border); border-radius:14px; padding:14px; }
+    .head { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+    .name { font-weight:700; font-size:1.05rem; }
+    .version { color:var(--accent); font-weight:700; }
+    .meta { margin-top:8px; color:var(--muted); font-size:13px; }
+    .desc { margin-top:8px; color:var(--text); opacity:.92; }
+    .download { margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>客户端下载中心</h1>
+      <p>这里提供社区客户端与工具下载。仅支持下载，不开放用户上传。</p>
+      <div class="actions">
+        <a class="btn secondary" href="/">返回首页</a>
+      </div>
+    </div>
+
+    <div id="status" class="status">正在加载...</div>
+    <div id="list" class="list"></div>
+  </div>
+
+  <script>
+    function formatSize(size) {
+      const n = Number(size || 0);
+      if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(2) + ' MB';
+      if (n >= 1024) return (n / 1024).toFixed(2) + ' KB';
+      return n + ' B';
+    }
+
+    function render(items) {
+      const list = document.getElementById('list');
+      if (!items.length) {
+        list.innerHTML = '<div class="card"><div class="meta">暂时没有可下载应用。</div></div>';
+        return;
+      }
+      list.innerHTML = items.map(item => {
+        const time = item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : '-';
+        return `
+          <div class="card">
+            <div class="head">
+              <div class="name">${item.name || '-'}</div>
+              <div class="version">${item.version || '-'}</div>
+            </div>
+            <div class="meta">文件：${item.fileName || '-'} | 大小：${formatSize(item.fileSize)} | 发布时间：${time}</div>
+            <div class="desc">${item.description || '暂无说明'}</div>
+            <div class="download"><a class="btn" href="${item.downloadUrl}" target="_blank">下载</a></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadDownloads() {
+      const status = document.getElementById('status');
+      status.textContent = '正在加载...';
+      try {
+        const resp = await fetch('/api/downloads');
+        const data = await resp.json();
+        if (!data.success) {
+          status.textContent = data.error || '加载失败';
+          return;
+        }
+        const items = data.items || [];
+        status.textContent = `当前共 ${items.length} 个可下载应用。`;
+        render(items);
+      } catch (error) {
+        status.textContent = '网络异常：' + error.message;
+      }
+    }
+
+    loadDownloads();
+  </script>
+</body>
+</html>

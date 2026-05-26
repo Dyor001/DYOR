@@ -1,0 +1,2742 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>鏉垮潡鐑害鐪嬫澘</title>
+  <style>
+    :root {
+      --bg:#080b10;
+      --panel:#111821;
+      --panel2:#151f2b;
+      --border:#263444;
+      --text:#eef4fb;
+      --muted:#9fb0c4;
+      --gold:#f0b90b;
+      --green:#28c786;
+      --red:#ff6b6b;
+      --blue:#7ea7ff;
+      --cyan:#48f0ff;
+      --violet:#8b5cf6;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      padding:22px;
+      font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(240,185,11,.18), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(72,240,255,.12), transparent 28%),
+        linear-gradient(180deg,#05070b,#0d1420 58%,#070a0f);
+    }
+    .wrap { max-width:1680px; margin:0 auto; }
+    .panel {
+      background:linear-gradient(180deg,rgba(17,24,33,.96),rgba(15,22,31,.96));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+      box-shadow:0 18px 55px rgba(0,0,0,.28);
+    }
+    .hero-panel {
+      position:relative;
+      overflow:hidden;
+      min-height:260px;
+      padding:28px;
+      border-color:rgba(240,185,11,.28);
+      background:
+        linear-gradient(135deg,rgba(240,185,11,.13),rgba(72,240,255,.035) 45%,rgba(17,24,33,.96)),
+        linear-gradient(180deg,rgba(17,24,33,.98),rgba(8,11,16,.98));
+    }
+    .hero-panel::before {
+      content:"";
+      position:absolute;
+      inset:-80px -120px auto auto;
+      width:360px;
+      height:360px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(240,185,11,.2),transparent 64%);
+      pointer-events:none;
+    }
+    .eyebrow { color:var(--gold); font-weight:900; letter-spacing:.16em; text-transform:uppercase; font-size:.78rem; margin-bottom:10px; }
+    .hero-copy { max-width:760px; position:relative; z-index:1; }
+    .hero-title { font-size:clamp(2.4rem,6vw,4.9rem); line-height:1.02; letter-spacing:.02em; color:#fff6ce; text-shadow:0 18px 52px rgba(240,185,11,.14); }
+    .hero-subtitle { font-size:1.02rem; max-width:680px; color:#c6d3df; }
+    .hero-badges { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .hero-badge { border:1px solid rgba(240,185,11,.25); background:rgba(240,185,11,.08); color:#fff3bd; border-radius:999px; padding:8px 11px; font-size:.82rem; font-weight:800; }
+    .equity-panel {
+      border:1px solid rgba(240,185,11,.32);
+      background:linear-gradient(135deg,rgba(240,185,11,.08),rgba(72,240,255,.03) 45%,rgba(255,255,255,.01));
+      padding:16px;
+      border-radius:16px;
+      margin-top:18px;
+    }
+    .equity-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .equity-title { color:#ffe9a2; font-size:1rem; font-weight:900; letter-spacing:.04em; }
+    .equity-tag { border:1px solid rgba(255,243,189,.28); color:#fff3bd; border-radius:999px; padding:5px 10px; font-size:.76rem; font-weight:800; }
+    .equity-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:12px; }
+    .equity-card { border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:11px 12px; background:rgba(7,12,18,.42); }
+    .equity-label { color:var(--muted); font-size:.78rem; }
+    .equity-value { margin-top:4px; color:#fff; font-size:1.2rem; font-weight:900; font-family:Consolas,"Courier New",monospace; }
+    .equity-note { margin-top:10px; color:#c8d4e1; font-size:.84rem; line-height:1.65; }
+    .admin-strip { justify-content:flex-end; opacity:.76; }
+    .admin-strip input { max-width:260px; }
+    .top { display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:flex-start; }
+    h1,h2,h3 { margin:0; }
+    h1 { color:#fff3bd; font-size:clamp(2rem,5vw,3.2rem); letter-spacing:.04em; }
+    h2 { color:var(--gold); font-size:1.1rem; margin-bottom:12px; }
+    p { margin:8px 0 0; color:var(--muted); line-height:1.7; }
+    .actions,.admin-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn {
+      border:none;
+      border-radius:11px;
+      padding:10px 14px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--gold);
+      color:#111;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+    }
+    .btn.secondary { background:#223043; color:var(--text); }
+    .btn.danger { background:rgba(255,107,107,.14); color:#ffd0d0; border:1px solid rgba(255,107,107,.28); }
+    input,textarea {
+      border:1px solid var(--border);
+      border-radius:11px;
+      background:#101720;
+      color:var(--text);
+      padding:11px 12px;
+      font:inherit;
+      outline:none;
+    }
+    textarea { min-height:62px; resize:vertical; }
+    input:focus,textarea:focus { border-color:rgba(240,185,11,.55); }
+    .status { color:var(--muted); font-size:13px; margin-top:10px; min-height:20px; }
+    .status.ok { color:var(--green); }
+    .status.error { color:var(--red); }
+    .login-panel {
+      border:1px solid rgba(240,185,11,.22);
+      background:linear-gradient(135deg,rgba(240,185,11,.1),rgba(72,240,255,.045));
+    }
+    .login-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .login-row input { min-width:min(360px,100%); flex:1; }
+    .login-message { color:var(--muted); font-size:13px; margin-top:10px; min-height:18px; }
+    .login-message.ok { color:var(--green); }
+    .login-message.error { color:var(--red); }
+    .app-content { display:none; }
+    .app-content.show { display:block; }
+    .summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .spotlight-panel {
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(240,185,11,.38);
+      border-radius:20px;
+      margin-bottom:12px;
+      padding:18px;
+      background:
+        radial-gradient(circle at 12% 20%,rgba(240,185,11,.22),transparent 32%),
+        linear-gradient(135deg,rgba(240,185,11,.12),rgba(72,240,255,.06),rgba(255,255,255,.025));
+      box-shadow:0 0 36px rgba(240,185,11,.12);
+    }
+    .spotlight-panel::after {
+      content:"";
+      position:absolute;
+      inset:-80px auto auto -80px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:rgba(240,185,11,.22);
+      filter:blur(30px);
+      animation:pulseGlow 2.4s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%,100% { opacity:.45; transform:scale(.92); }
+      50% { opacity:1; transform:scale(1.08); }
+    }
+    .spotlight-button {
+      position:relative;
+      z-index:1;
+      width:100%;
+      border:1px solid rgba(255,243,189,.28);
+      border-radius:18px;
+      padding:18px 20px;
+      background:linear-gradient(90deg,rgba(240,185,11,.95),rgba(255,223,99,.92));
+      color:#151006;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:center;
+      box-shadow:0 16px 42px rgba(240,185,11,.22);
+    }
+    .spotlight-kicker { font-size:.78rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; opacity:.72; }
+    .spotlight-title { font-size:1.7rem; font-weight:1000; margin-top:3px; }
+    .spotlight-meta { font-size:.9rem; font-weight:800; opacity:.78; margin-top:5px; }
+    .spotlight-pct { font-family:Consolas,"Courier New",monospace; font-size:2.35rem; font-weight:1000; white-space:nowrap; }
+    .summary-card { border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:13px; background:rgba(255,255,255,.03); }
+    .summary-card { position:relative; overflow:hidden; }
+    .summary-card::after { content:""; position:absolute; right:-24px; top:-24px; width:72px; height:72px; border-radius:50%; background:rgba(240,185,11,.08); }
+    .summary-card .label { color:var(--muted); font-size:.78rem; }
+    .summary-card .value { color:#fff3bd; font-size:1.45rem; font-weight:900; margin-top:4px; }
+    .hunter-panel { border:1px solid rgba(72,240,255,.26); background:linear-gradient(180deg,rgba(10,20,32,.95),rgba(9,16,27,.95)); }
+    .hunter-head { display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+    .hunter-title { color:#bff8ff; font-size:1.05rem; font-weight:900; }
+    .hunter-meta { color:var(--muted); font-size:.85rem; }
+    .hunter-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .hunter-table { width:100%; border-collapse:collapse; min-width:980px; }
+    .hunter-table th,.hunter-table td { border-bottom:1px solid rgba(255,255,255,.06); padding:10px 9px; text-align:left; font-size:.86rem; }
+    .hunter-table th { color:#9fc2dc; font-weight:800; }
+    .hunter-token { color:#fff3bd; font-weight:900; letter-spacing:.02em; }
+    .hunter-risk-low { color:#8ef0c7; font-weight:800; }
+    .hunter-risk-medium { color:#ffd37c; font-weight:800; }
+    .hunter-risk-high { color:#ff9c9c; font-weight:800; }
+    .sector-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .linkage-layout { display:grid; grid-template-columns:420px minmax(1120px,1fr); gap:24px; align-items:start; }
+    .sector-sidebar {
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      background:rgba(255,255,255,.025);
+      overflow:hidden;
+      position:sticky;
+      top:14px;
+    }
+    .sector-sidebar-head { padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.06); }
+    .sector-sidebar-title { color:#fff3bd; font-weight:900; font-size:1.35rem; }
+    .sector-sidebar-sub { color:var(--muted); font-size:.92rem; margin-top:6px; }
+    .sector-nav-list { display:grid; max-height:70vh; overflow:auto; }
+    .sector-nav-item {
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:center;
+      width:100%;
+      border:0;
+      border-bottom:1px solid rgba(255,255,255,.055);
+      background:transparent;
+      color:var(--text);
+      text-align:left;
+      padding:18px 20px;
+      cursor:pointer;
+    }
+    .sector-nav-item:hover { background:rgba(240,185,11,.06); }
+    .sector-nav-item.active {
+      background:linear-gradient(90deg,rgba(240,185,11,.16),rgba(72,240,255,.045));
+      box-shadow:inset 3px 0 0 var(--gold);
+    }
+    .sector-rank { color:var(--muted); font-family:Consolas,"Courier New",monospace; font-weight:900; font-size:1rem; }
+    .sector-nav-name { color:#fff3bd; font-weight:900; font-size:1.18rem; }
+    .sector-nav-meta { color:var(--muted); font-size:.92rem; margin-top:5px; }
+    .sector-nav-pct { font-family:Consolas,"Courier New",monospace; font-weight:900; font-size:1.08rem; }
+    .sector-detail { min-width:1120px; }
+    .sector-detail-card { border:1px solid rgba(255,255,255,.08); border-radius:18px; background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.018)); overflow:hidden; }
+    .sector-detail-hero {
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      padding:18px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:radial-gradient(circle at top right,rgba(240,185,11,.13),transparent 40%);
+    }
+    .sector-detail-name { color:#fff3bd; font-size:2.35rem; font-weight:900; }
+    .sector-detail-note { color:var(--muted); margin-top:10px; line-height:1.75; font-size:1.05rem; }
+    .sector-detail-score { text-align:right; min-width:210px; }
+    .sector-detail-score .value { font-size:3rem; font-weight:900; font-family:Consolas,"Courier New",monospace; }
+    .sector-table-wrap { overflow:visible; }
+    .sector-detail-card table { table-layout:fixed; }
+    .sector-detail-card table th,
+    .sector-detail-card table td { padding:22px 20px; font-size:1.04rem; }
+    .sector-detail-card table th:nth-child(2),
+    .sector-detail-card table td:nth-child(2) { width:34%; }
+    .sector-detail-card td.price,
+    .sector-detail-card td.change { font-size:1.08rem; }
+    .sector-detail-card td strong { font-size:1.08rem; }
+    .sector-detail-card td .leader { margin-top:8px; line-height:1.75; max-width:520px; white-space:normal; }
+    .contract-copy {
+      border:1px solid rgba(240,185,11,.28);
+      background:rgba(240,185,11,.08);
+      color:#fff3bd;
+      border-radius:999px;
+      padding:4px 8px;
+      margin-top:8px;
+      font-size:.72rem;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .contract-copy:hover { background:rgba(240,185,11,.16); }
+    #specialAlphaPanel .contract-copy,
+    #specialAlphaPanel [data-alpha-add-field="assetType"],
+    #specialAlphaPanel [data-alpha-add-field="chainId"],
+    #specialAlphaPanel [data-alpha-add-field="contractAddress"] { display:none !important; }
+    .status-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .status-tag {
+      display:inline-flex;
+      align-items:center;
+      border:1px solid rgba(240,185,11,.28);
+      background:rgba(240,185,11,.09);
+      color:#fff3bd;
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:.72rem;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .status-tag.onchain { border-color:rgba(72,240,255,.28); background:rgba(72,240,255,.09); color:#bff8ff; }
+    .status-tag.exchange { border-color:rgba(40,199,134,.3); background:rgba(40,199,134,.1); color:#aef7d8; }
+    .inline-admin-grid { display:grid; grid-template-columns:1fr 1.5fr auto; gap:10px; align-items:start; margin-top:12px; }
+    .inline-token-editor { display:grid; gap:8px; min-width:420px; }
+    .inline-token-editor .topline { display:grid; grid-template-columns:110px 110px 120px minmax(180px,1fr) auto; gap:8px; align-items:center; }
+    .inline-token-editor .linkline { display:grid; grid-template-columns:minmax(220px,1fr) minmax(220px,1fr); gap:8px; }
+    .inline-token-editor textarea { min-height:56px; }
+    .inline-token-editor select {
+      border:1px solid var(--border);
+      border-radius:11px;
+      background:#101720;
+      color:var(--text);
+      padding:10px 11px;
+      font:inherit;
+      outline:none;
+    }
+    .sector-card { border:1px solid rgba(255,255,255,.08); border-radius:18px; background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.018)); overflow:hidden; }
+    .sector-head { padding:15px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,.06); }
+    .sector-name { color:#fff3bd; font-weight:900; font-size:1.15rem; }
+    .sector-note { color:var(--muted); font-size:.84rem; margin-top:6px; line-height:1.55; }
+    .sector-stats { text-align:right; min-width:140px; }
+    .avg { font-size:1.35rem; font-weight:900; }
+    .up { color:var(--green); }
+    .down { color:var(--red); }
+    .flat { color:var(--muted); }
+    .leader { color:var(--muted); font-size:.82rem; margin-top:4px; }
+    .missing-list { padding:10px 14px 14px; display:grid; gap:6px; border-top:1px solid rgba(255,255,255,.055); }
+    .missing-title { color:#ffd0d0; font-size:.82rem; font-weight:800; }
+    .missing-item { color:var(--muted); font-size:.8rem; line-height:1.5; }
+    .quick-add { padding:10px 14px 12px; border-top:1px solid rgba(240,185,11,.16); background:rgba(240,185,11,.035); display:grid; gap:8px; }
+    .quick-add-title { color:#fff3bd; font-size:.84rem; font-weight:900; }
+    .quick-add-toggle { justify-self:start; min-height:34px; padding:7px 11px; border-radius:9px; }
+    .quick-add-form { display:none; gap:8px; }
+    .quick-add.open .quick-add-form { display:grid; }
+    .quick-add-grid { display:grid; grid-template-columns:120px 120px minmax(130px,1fr); gap:8px; align-items:start; }
+    .quick-add-actions { display:flex; justify-content:flex-end; gap:8px; }
+    .quick-add-grid select {
+      border:1px solid var(--border);
+      border-radius:11px;
+      background:#101720;
+      color:var(--text);
+      padding:11px 12px;
+      font:inherit;
+      outline:none;
+    }
+    .alpha-special-panel { border-color:rgba(240,185,11,.38); background:linear-gradient(180deg,rgba(38,30,11,.96),rgba(17,24,33,.96)); }
+    .alpha-special-table td,.alpha-special-table th { vertical-align:top; }
+    .marketcap-good { color:var(--green); font-weight:900; }
+    .marketcap-bad { color:var(--red); font-weight:900; }
+    .node-lights { display:flex; flex-wrap:wrap; gap:6px; }
+    .node-lights.vertical { display:grid; grid-template-columns:1fr; align-items:start; }
+    .node-light { border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:4px 8px; color:var(--muted); background:rgba(255,255,255,.035); font-size:.76rem; white-space:nowrap; }
+    .node-light.on { color:#07130d; background:var(--green); border-color:var(--green); font-weight:900; }
+    .cap-range { display:grid; gap:4px; min-width:150px; }
+    .cap-range input { width:100%; padding:8px 9px; border-radius:8px; }
+    .alpha-add-grid { display:grid; grid-template-columns:110px 110px 130px minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) auto; gap:8px; align-items:center; margin:12px 0; }
+    .alpha-token-link { color:var(--gold); text-decoration:none; font-weight:900; }
+    .alpha-token-link:hover { text-decoration:underline; }
+    .open-price-pct { display:block; margin-top:4px; font-family:Consolas,"Courier New",monospace; font-weight:900; }
+    .alpha-price-stack { display:grid; gap:5px; min-width:76px; }
+    .alpha-price-stack label { display:flex; align-items:center; justify-content:space-between; gap:5px; color:var(--muted); font-size:.7rem; white-space:nowrap; }
+    .alpha-entry-col { width:86px; min-width:86px; max-width:86px; }
+    .alpha-mini-input { width:58px; min-width:58px; max-width:58px; padding:7px 6px; border-radius:8px; font-size:.78rem; text-align:center; }
+    .alpha-special-table th.alpha-entry-col,
+    .alpha-special-table td.alpha-entry-col { padding-left:6px; padding-right:6px; }
+    .alpha-link-input { min-width:190px; padding:8px 9px; border-radius:8px; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.055); text-align:left; font-size:.88rem; }
+    th { color:var(--muted); font-weight:700; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; }
+    td.price,td.change { font-family:Consolas,"Courier New",monospace; font-weight:800; }
+    .empty { color:var(--muted); padding:26px; text-align:center; }
+    .admin-panel { display:none; }
+    .admin-panel.show { display:block; }
+    .editor-list { display:grid; gap:10px; }
+    .editor-item { border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(255,255,255,.025); padding:12px; }
+    .editor-item-head { display:flex; justify-content:space-between; gap:10px; margin-bottom:10px; align-items:center; }
+    .editor-grid { display:grid; grid-template-columns:1fr 2fr; gap:10px; }
+    .editor-grid textarea { grid-column:1 / -1; }
+    .token-editor { grid-column:1 / -1; display:grid; gap:8px; }
+    .token-row { display:grid; grid-template-columns:120px 120px 150px minmax(180px,1fr) minmax(180px,1fr) auto; gap:8px; align-items:start; }
+    .token-row textarea { min-height:44px; grid-column:auto; }
+    .token-row select {
+      border:1px solid var(--border);
+      border-radius:11px;
+      background:#101720;
+      color:var(--text);
+      padding:11px 12px;
+      font:inherit;
+      outline:none;
+    }
+    .mini-btn { min-height:38px; padding:8px 10px; border-radius:9px; font-size:.82rem; }
+    .hint { color:var(--muted); font-size:.82rem; line-height:1.6; margin-top:8px; }
+    @media (max-width:900px) {
+      body { padding:14px; }
+      .summary-grid,.sector-grid,.editor-grid,.linkage-layout { grid-template-columns:1fr; }
+      .hero-panel { padding:20px; min-height:auto; }
+      .hero-title { font-size:2.45rem; }
+      .hero-subtitle { font-size:.94rem; }
+      .hero-badges { gap:7px; }
+      .hero-badge { padding:7px 9px; font-size:.76rem; }
+      .equity-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .linkage-layout { gap:12px; }
+      .sector-sidebar { position:static; border-radius:16px; }
+      .sector-sidebar-head { padding:14px 15px; }
+      .sector-sidebar-title { font-size:1.08rem; }
+      .sector-sidebar-sub { font-size:.78rem; }
+      .sector-nav-list {
+        display:flex;
+        overflow-x:auto;
+        max-height:none;
+        scroll-snap-type:x mandatory;
+        -webkit-overflow-scrolling:touch;
+      }
+      .sector-nav-item {
+        min-width:230px;
+        grid-template-columns:auto 1fr;
+        grid-template-rows:auto auto;
+        padding:13px 14px;
+        border-bottom:0;
+        border-right:1px solid rgba(255,255,255,.055);
+        scroll-snap-align:start;
+      }
+      .sector-nav-item .sector-nav-pct {
+        grid-column:1 / -1;
+        font-size:1.35rem;
+        margin-left:30px;
+      }
+      .sector-nav-name { font-size:1rem; }
+      .sector-nav-meta { font-size:.78rem; }
+      .sector-rank { font-size:.82rem; }
+      .sector-detail { min-width:0; width:100%; }
+      .sector-detail-card { border-radius:16px; }
+      .sector-detail-hero { flex-direction:column; }
+      .sector-detail-score { text-align:left; }
+      .sector-detail-name { font-size:1.8rem; }
+      .sector-detail-score .value { font-size:2.45rem; }
+      .sector-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .sector-detail-card table { min-width:760px; table-layout:auto; }
+      .sector-detail-card table th,
+      .sector-detail-card table td { padding:14px 13px; font-size:.92rem; }
+      .sector-detail-card table th:nth-child(2),
+      .sector-detail-card table td:nth-child(2) { width:260px; }
+      .sector-detail-card td .leader { max-width:260px; line-height:1.6; }
+      .sector-head { flex-direction:column; }
+      .sector-stats { text-align:left; }
+      .actions,.admin-row { width:100%; }
+      .token-row { grid-template-columns:1fr; }
+      .quick-add-grid { grid-template-columns:1fr; }
+      .alpha-add-grid { grid-template-columns:1fr; }
+      .quick-add-actions { justify-content:stretch; }
+      .btn,input { width:100%; }
+    }
+    @media (max-width:560px) {
+      .equity-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel hero-panel">
+      <div class="top">
+        <div class="hero-copy">
+          <div class="eyebrow">DYOR Sentinels · Sector Linkage Radar</div>
+          <h1 class="hero-title">加密概念联动雷达</h1>
+          <p class="hero-subtitle">把零散上涨变成可观察的板块热度：按概念追踪代币的 5分钟、1小时、1天与7天表现，快速识别资金正在点火的叙事方向。</p>
+          <div class="hero-badges">
+            <span class="hero-badge">概念热度</span>
+            <span class="hero-badge">板块联动</span>
+            <span class="hero-badge">短线异动</span>
+            <span class="hero-badge">白名单开放</span>
+          </div>
+          <div class="equity-panel">
+            <div class="equity-head">
+              <div class="equity-title">权益模块</div>
+              <span class="equity-tag">看板权益</span>
+            </div>
+            <div class="equity-grid">
+              <div class="equity-card">
+                <div class="equity-label">当前等级</div>
+                <div class="equity-value" id="equityTier">HUNTER V1</div>
+              </div>
+              <div class="equity-card">
+                <div class="equity-label">白名单状态</div>
+                <div class="equity-value" id="equityWhitelist">已开通</div>
+              </div>
+              <div class="equity-card">
+                <div class="equity-label">健康/漏斗</div>
+                <div class="equity-value" id="equityCoverage">--</div>
+              </div>
+              <div class="equity-card">
+                <div class="equity-label">更新时间</div>
+                <div class="equity-value" id="equityRefresh">--</div>
+              </div>
+            </div>
+            <div class="equity-note">来源：Binance Smart Money。仅用于看板辅助决策，不涉及自动下单。</div>
+          </div>
+        </div>        <div class="actions">
+          <a class="btn secondary" href="/">杩斿洖棣栭〉</a>
+          <button id="refreshBtn" class="btn">鍒锋柊琛屾儏</button>
+        </div>
+      </div>
+      <div id="status" class="status">姝ｅ湪鍔犺浇...</div>
+    </div>
+
+    <div class="panel">
+      <h2>甯傚満闆疯揪姒傝</h2>
+      <div id="spotlightPanel" class="spotlight-panel"></div>
+      <div id="summaryGrid" class="summary-grid"></div>
+    </div>
+
+    <div class="panel hunter-panel">
+      <div class="hunter-head">
+        <div class="hunter-title">猎人推荐代币 Top 信号</div>
+        <div id="hunterMeta" class="hunter-meta">正在加载...</div>
+      </div>
+      <div class="hunter-table-wrap">
+        <table class="hunter-table">
+          <thead>
+            <tr>
+              <th>代币</th>
+              <th>链</th>
+              <th>当前价</th>
+              <th>综合分</th>
+              <th>风险</th>
+              <th>止损</th>
+              <th>TP1</th>
+              <th>TP2</th>
+              <th>TP3</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody id="hunterRows">
+            <tr><td colspan="10" class="leader">正在加载推荐信号...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="top" style="margin-bottom:12px;">
+        <h2>姒傚康鏉垮潡</h2>
+        <div class="admin-row admin-strip">
+          <input id="adminPassword" type="password" placeholder="绠＄悊鍛樺瘑鐮侊紝杈撳叆鍚庡彲鐩存帴缂栬緫鏉垮潡" />
+          <button id="enterAdminBtn" class="btn secondary">杩涘叆绠＄悊妯″紡</button>
+        </div>
+      </div>
+      <div id="sectorGrid" class="sector-grid"></div>
+    </div>
+
+    <div id="adminPanel" class="panel admin-panel">
+      <div class="top" style="margin-bottom:12px;">
+        <div>
+          <h2>绠＄悊鏉垮潡</h2>
+          <p>鍙渶瑕佸～鍐欐澘鍧楀悕绉板拰浠ｅ竵鍒楄〃銆備唬甯佺敤鑻辨枃閫楀彿鍒嗛殧锛屼緥濡傦細FIL,AR,STORJ銆?/p>
+        </div>
+        <div class="actions">
+          <button id="addSectorBtn" class="btn secondary">鏂板鏉垮潡</button>
+          <button id="saveBtn" class="btn">淇濆瓨鍏ㄩ儴</button>
+        </div>
+      </div>
+      <div id="editorList" class="editor-list"></div>
+      <div class="hint">璇存槑锛氳繖閲屼繚瀛樺悗浼氱洿鎺ュ奖鍝嶄笂鏂圭湅鏉裤€傚綋鍓嶅彧鍋氭澘鍧楃儹搴︼紝涓嶅啀缁存姢棰嗘定鍏崇郴銆佽仈鍔ㄧ煩闃点€佷簨浠舵椂闂寸嚎銆?/div>
+    </div>
+  </div>
+
+  <script>
+    let state = { concepts: [], relations: [], events: [] };
+    let snapshot = { conceptBoard: [] };
+    let adminMode = false;
+    let canViewAlpha = false;
+    let selectedSectorId = '';
+
+    const statusEl = document.getElementById('status');
+    const summaryGrid = document.getElementById('summaryGrid');
+    const spotlightPanel = document.getElementById('spotlightPanel');
+    const hunterMetaEl = document.getElementById('hunterMeta');
+    const hunterRowsEl = document.getElementById('hunterRows');
+    const sectorGrid = document.getElementById('sectorGrid');
+    const equityTierEl = document.getElementById('equityTier');
+    const equityWhitelistEl = document.getElementById('equityWhitelist');
+    const equityCoverageEl = document.getElementById('equityCoverage');
+    const equityRefreshEl = document.getElementById('equityRefresh');
+    const adminPanel = document.getElementById('adminPanel');
+    const editorList = document.getElementById('editorList');
+    const adminPassword = document.getElementById('adminPassword');
+    const specialAlphaPanel = document.createElement('div');
+    specialAlphaPanel.id = 'specialAlphaPanel';
+    specialAlphaPanel.className = 'panel alpha-special-panel';
+    specialAlphaPanel.style.display = 'none';
+    sectorGrid.closest('.panel').before(specialAlphaPanel);
+    const pagePanels = Array.from(document.querySelectorAll('.wrap > .panel'));
+    const protectedPanels = pagePanels.slice(1);
+    const loginPanel = document.createElement('div');
+    loginPanel.id = 'loginPanel';
+    loginPanel.className = 'panel login-panel';
+    loginPanel.innerHTML = `
+      <h2>鑾峰彇鑱斿姩鐪嬫澘鐧藉悕鍗?/h2>
+      <p>璇疯緭鍏ュ凡鐧昏鐨勯偖绠憋紝楠岃瘉鍚庡嵆鍙煡鐪嬫蹇佃仈鍔ㄩ浄杈俱€傝鐧藉悕鍗曚粎寮€鏀炬櫘閫氳仈鍔ㄩ〉闈紝涓嶅寘鍚唴閮?ALPHA 瑙傚療鍖轰笌瀹屾暣鎸佷粨淇℃伅銆?/p>
+      <div class="login-row">
+        <input id="emailInput" type="email" placeholder="璇疯緭鍏ョ櫧鍚嶅崟閭" autocomplete="email" />
+        <button id="loginBtn" class="btn">楠岃瘉骞舵煡鐪?/button>
+      </div>
+      <div id="loginMessage" class="login-message"></div>
+    `;
+    pagePanels[0].after(loginPanel);
+    const emailInput = document.getElementById('emailInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginMessage = document.getElementById('loginMessage');
+    let whitelistEmail = localStorage.getItem('fundViewEmail') || '';
+    let whitelistLoggedIn = localStorage.getItem('fundViewLoggedIn') === 'true' && !!whitelistEmail;
+
+    adminPassword.value = localStorage.getItem('alphaAdminPassword') || '';
+    emailInput.value = whitelistEmail;
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function uid() {
+      return `concept_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function parseTokens(value) {
+      return String(value || '')
+        .split(',')
+        .map(item => item.trim().toUpperCase())
+        .filter(Boolean);
+    }
+
+    function parseStatusTags(value) {
+      const source = Array.isArray(value) ? value : String(value || '').split(/[,锛屻€乗n]/);
+      const seen = new Set();
+      return source
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+        .filter(item => {
+          const key = item.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function normalizeTokenItems(concept) {
+      const fromItems = Array.isArray(concept?.tokenItems) ? concept.tokenItems : null;
+      const source = fromItems || (Array.isArray(concept?.tokens) ? concept.tokens.map(symbol => ({ symbol, notes: '' })) : []);
+      const seen = new Set();
+      return source
+        .map(item => ({
+          symbol: String(item?.symbol || item || '').trim().toUpperCase(),
+          assetType: String(item?.assetType || item?.type || '').trim().toLowerCase() === 'onchain' ? 'onchain' : 'binance',
+          chainId: String(item?.chainId || '').trim(),
+          contractAddress: String(item?.contractAddress || item?.address || '').trim(),
+          entryMarketCapMin: Number.isFinite(Number(item?.entryMarketCapMin)) ? Number(item.entryMarketCapMin) : null,
+          entryMarketCapMax: Number.isFinite(Number(item?.entryMarketCapMax)) ? Number(item.entryMarketCapMax) : null,
+          entryPriceMin: Number.isFinite(Number(item?.entryPriceMin)) ? Number(item.entryPriceMin) : null,
+          entryPriceMax: Number.isFinite(Number(item?.entryPriceMax)) ? Number(item.entryPriceMax) : null,
+          institutionPrice: Number.isFinite(Number(item?.institutionPrice)) ? Number(item.institutionPrice) : null,
+          preMarketPrice: Number.isFinite(Number(item?.preMarketPrice)) ? Number(item.preMarketPrice) : null,
+          openPrice: Number.isFinite(Number(item?.openPrice)) ? Number(item.openPrice) : null,
+          twitterUrl: /^https?:\/\//i.test(String(item?.twitterUrl || '').trim()) ? String(item.twitterUrl).trim() : '',
+          statusTags: parseStatusTags(item?.statusTags || item?.tags || item?.listingTags || ''),
+          listingNodes: {
+            binanceFutures: Boolean(item?.listingNodes?.binanceFutures),
+            binanceSpot: Boolean(item?.listingNodes?.binanceSpot),
+            coinbase: Boolean(item?.listingNodes?.coinbase),
+            upbit: Boolean(item?.listingNodes?.upbit),
+            bithumb: Boolean(item?.listingNodes?.bithumb)
+          },
+          notes: String(item?.notes || '').trim()
+        }))
+        .filter(item => {
+          if (!item.symbol || seen.has(item.symbol)) return false;
+          seen.add(item.symbol);
+          return true;
+        });
+    }
+
+    function ensureTokenItems(concept) {
+      concept.tokenItems = normalizeTokenItems(concept);
+      concept.tokens = concept.tokenItems.map(item => item.symbol);
+      return concept.tokenItems;
+    }
+
+    function fmtPrice(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return '-';
+      if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+      if (n >= 1) return n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+      return n.toLocaleString('en-US', { maximumFractionDigits: 8 });
+    }
+
+    function fmtPct(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return '-';
+      return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+    }
+
+    function fmtMarketCap(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n <= 0) return '-';
+      if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+      if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+      if (n >= 1e3) return `$${(n / 1e3).toFixed(2)}K`;
+      return `$${n.toFixed(0)}`;
+    }
+
+    function deriveStatusTags(item = {}, token = null) {
+      const manual = parseStatusTags(token?.statusTags || item.statusTags || []);
+      if (manual.length) return manual;
+      const tags = [];
+      const source = String(item.source || '').toLowerCase();
+      const assetType = String(item.assetType || token?.assetType || '').toLowerCase();
+      const nodes = item.listingNodes || token?.listingNodes || {};
+      if (assetType === 'onchain') tags.push('閾句笂');
+      if (source === 'binance_alpha' || /ALPHA_/i.test(String(item.pair || ''))) tags.push('甯佸畨Alpha');
+      if (source === 'binance_futures' || nodes.binanceFutures) tags.push('甯佸畨鍚堢害');
+      if (source === 'binance_spot' || nodes.binanceSpot || (/USDT$/i.test(String(item.pair || '')) && source !== 'binance_alpha' && source !== 'binance_futures')) tags.push('甯佸畨鐜拌揣');
+      if (nodes.coinbase) tags.push('Coinbase');
+      if (nodes.upbit) tags.push('Upbit');
+      if (nodes.bithumb) tags.push('Bithumb');
+      return parseStatusTags(tags);
+    }
+
+    function statusTagHtml(tags) {
+      const clean = parseStatusTags(tags);
+      if (!clean.length) return '';
+      return `<div class="status-tags">${clean.map(tag => {
+        const cls = /閾句笂/.test(tag) ? 'onchain' : (/甯佸畨|Coinbase|Upbit|Bithumb/i.test(tag) ? 'exchange' : '');
+        return `<span class="status-tag ${cls}">${esc(tag)}</span>`;
+      }).join('')}</div>`;
+    }
+
+    async function resolveTokenSource(symbol) {
+      const value = String(symbol || '').trim().toUpperCase();
+      if (!value) return null;
+      try {
+        const resp = await fetch(`/api/linkage/resolve-token?symbol=${encodeURIComponent(value)}`);
+        const json = await resp.json();
+        if (!json.success) return null;
+        return json.data || null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function isMarketCapInRange(current, min, max) {
+      const value = Number(current);
+      const low = Number(min);
+      const high = Number(max);
+      if (!(value > 0) || !(low > 0 || high > 0)) return false;
+      if (low > 0 && value < low) return false;
+      if (high > 0 && value > high) return false;
+      return true;
+    }
+
+    function isPriceInRange(current, min, max) {
+      const value = Number(current);
+      const low = Number(min);
+      const high = Number(max);
+      if (!(value > 0) || !(low > 0 || high > 0)) return false;
+      if (low > 0 && value < low) return false;
+      if (high > 0 && value > high) return false;
+      return true;
+    }
+
+    function priceFromPercent(current, percent) {
+      const value = Number(current);
+      const pct = Number(percent);
+      if (!(value > 0) || !Number.isFinite(pct)) return null;
+      return Number((value * (1 + pct / 100)).toPrecision(10));
+    }
+
+    function pctFromBase(current, base) {
+      const value = Number(current);
+      const start = Number(base);
+      if (!(value > 0) || !(start > 0)) return null;
+      return ((value - start) / start) * 100;
+    }
+
+    function listingNodeHtml(nodes = {}) {
+      const items = [
+        ['binanceFutures', '甯佸畨鍚堢害'],
+        ['binanceSpot', '甯佸畨鐜拌揣'],
+        ['coinbase', 'Coinbase'],
+        ['upbit', 'Upbit'],
+        ['bithumb', 'Bithumb']
+      ];
+      return `<div class="node-lights">${items.map(([key, label]) => `<span class="node-light ${nodes?.[key] ? 'on' : ''}">${label}</span>`).join('')}</div>`;
+    }
+
+    function pctClass(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n === 0) return 'flat';
+      return n > 0 ? 'up' : 'down';
+    }
+
+    function toHealthLabel(status) {
+      if (status === 'healthy') return '姝ｅ父';
+      if (status === 'sample_insufficient') return '鏍锋湰涓嶈冻';
+      if (status === 'upstream_error') return '鎺ュ彛寮傚父';
+      return '鏈煡';
+    }
+
+    function fmtTime(value) {
+      const ts = Date.parse(value || '');
+      if (!Number.isFinite(ts)) return '--';
+      return new Date(ts).toLocaleString('zh-CN', { hour12: false });
+    }
+
+    function fmtHunterPrice(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return '-';
+      if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+      if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+      return n.toPrecision(6);
+    }
+
+    function riskClass(risk) {
+      const v = String(risk || '').toLowerCase();
+      if (v === 'low') return 'hunter-risk-low';
+      if (v === 'medium') return 'hunter-risk-medium';
+      if (v === 'high') return 'hunter-risk-high';
+      return '';
+    }
+
+    async function loadHunterSignals() {
+      try {
+        const resp = await fetch('/api/hunter/signals?limit=10&refresh=1');
+        const json = await resp.json();
+        if (!json?.success) throw new Error(json?.error || 'load failed');
+        const meta = json.meta || {};
+        const rows = Array.isArray(json.signals) ? json.signals : [];
+        hunterMetaEl.textContent = `Source: Binance Smart Money | Updated: ${fmtTime(meta.updatedAt)} | 健康: ${toHealthLabel(meta.dataHealth)} | 漏斗 ${meta.rawCount || 0}/${meta.filteredCount || 0}/${meta.pushedCount || 0}`;
+        if (!rows.length) {
+          hunterRowsEl.innerHTML = `<tr><td colspan="10" class="leader">本轮暂无达标推荐（可能是样本不足或过滤后为空）。</td></tr>`;
+          return;
+        }
+        hunterRowsEl.innerHTML = rows.map(item => `
+          <tr>
+            <td class="hunter-token">${esc(item.token || '-')}</td>
+            <td>${esc(item.chain || '-')}</td>
+            <td>$${fmtHunterPrice(item.currentPrice)}</td>
+            <td>${Number.isFinite(Number(item.totalScore)) ? Number(item.totalScore).toFixed(2) : '-'}</td>
+            <td class="${riskClass(item.riskLevel)}">${esc(item.riskLevel || '-')}</td>
+            <td>${Number.isFinite(Number(item.stopLoss)) ? `$${fmtHunterPrice(item.stopLoss)}` : '-'}</td>
+            <td>${Number.isFinite(Number(item.tp1)) ? `$${fmtHunterPrice(item.tp1)}` : '-'}</td>
+            <td>${Number.isFinite(Number(item.tp2)) ? `$${fmtHunterPrice(item.tp2)}` : '-'}</td>
+            <td>${Number.isFinite(Number(item.tp3)) ? `$${fmtHunterPrice(item.tp3)}` : '-'}</td>
+            <td>${fmtTime(item.detectedAt)}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        hunterMetaEl.textContent = 'Source: Binance Smart Money | 接口异常';
+        hunterRowsEl.innerHTML = `<tr><td colspan="10" class="leader">推荐信号加载失败：${esc(error.message || 'unknown error')}</td></tr>`;
+      }
+    }
+
+    async function updateHunterEquity() {
+      try {
+        const [signalsResp, healthResp] = await Promise.all([
+          fetch('/api/hunter/signals?limit=1'),
+          fetch('/api/hunter/health')
+        ]);
+        const signalsJson = await signalsResp.json();
+        const healthJson = await healthResp.json();
+        const meta = signalsJson?.meta || {};
+        const healthStatus = String(healthJson?.status || meta?.dataHealth || 'unknown');
+        const rawCount = Number(meta.rawCount || 0);
+        const filteredCount = Number(meta.filteredCount || 0);
+        const pushedCount = Number(meta.pushedCount || 0);
+        equityTierEl.textContent = 'HUNTER V1';
+        equityWhitelistEl.textContent = whitelistLoggedIn ? '宸插紑閫? : '娓稿';
+        equityCoverageEl.textContent = `${toHealthLabel(healthStatus)} ${rawCount}/${filteredCount}/${pushedCount}`;
+        equityRefreshEl.textContent = fmtTime(meta.updatedAt || healthJson?.updatedAt);
+      } catch (error) {
+        equityTierEl.textContent = 'HUNTER V1';
+        equityWhitelistEl.textContent = whitelistLoggedIn ? '宸插紑閫? : '娓稿';
+        equityCoverageEl.textContent = '鎺ュ彛寮傚父';
+        equityRefreshEl.textContent = '--';
+      }
+    }
+
+    function setProtectedVisible(visible) {
+      protectedPanels.forEach(panel => {
+        panel.style.display = visible ? '' : 'none';
+      });
+      loginPanel.style.display = visible ? 'none' : '';
+      updateHunterEquity();
+      if (!visible) {
+        statusEl.textContent = '璇峰厛瀹屾垚鐧藉悕鍗曢偖绠遍獙璇併€?;
+        statusEl.className = 'status';
+      }
+      loadHunterSignals();
+    }
+
+    function setLoginMessage(text, type = '') {
+      loginMessage.textContent = text;
+      loginMessage.className = `login-message ${type}`.trim();
+    }
+
+    async function loginAndLoad() {
+      const email = emailInput.value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setLoginMessage('璇疯緭鍏ョ櫧鍚嶅崟涓殑鏈夋晥閭銆?, 'error');
+        return;
+      }
+
+      setLoginMessage('姝ｅ湪楠岃瘉鐧藉悕鍗?..', '');
+      try {
+        const resp = await fetch('/api/linkage-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const json = await resp.json();
+        if (!json.success) {
+          if (resp.status === 401) {
+            whitelistLoggedIn = false;
+            localStorage.removeItem('fundViewLoggedIn');
+            setProtectedVisible(false);
+            setLoginMessage('鐧藉悕鍗曢獙璇佸凡澶辨晥锛岃閲嶆柊杈撳叆閭楠岃瘉銆?, 'error');
+            return;
+          }
+          setLoginMessage(json.error || '璇ラ偖绠变笉鍦ㄧ櫧鍚嶅崟涓€?, 'error');
+          return;
+        }
+        whitelistEmail = email;
+        whitelistLoggedIn = true;
+        localStorage.setItem('fundViewEmail', email);
+        localStorage.setItem('fundViewLoggedIn', 'true');
+        setLoginMessage('楠岃瘉鎴愬姛锛屾鍦ㄨ繘鍏ユ澘鍧楃儹搴︾湅鏉裤€?, 'ok');
+        setProtectedVisible(true);
+        await loadData();
+      } catch (error) {
+        setLoginMessage(`楠岃瘉澶辫触锛?{error.message}`, 'error');
+      }
+    }
+
+    function getBoardItem(concept) {
+      const board = Array.isArray(snapshot.conceptBoard) ? snapshot.conceptBoard : [];
+      return board.find(item => item.conceptId === concept.id || item.name === concept.name) || null;
+    }
+
+    function getSpecialAlphaConcept() {
+      return state.concepts.find(concept => /浼樿川.*alpha|alpha/i.test(String(concept.name || ''))) || null;
+    }
+
+    function isSpecialAlphaConcept(concept) {
+      return /娴兼宸?*alpha|alpha/i.test(String(concept?.name || ''));
+    }
+
+    function normalizeSpecialAlphaTokens(concept) {
+      if (!concept) return [];
+      const items = ensureTokenItems(concept);
+      items.forEach(item => {
+        item.assetType = 'binance';
+        item.chainId = '';
+        item.contractAddress = '';
+        item.statusTags = [];
+      });
+      concept.tokens = items.map(item => item.symbol).filter(Boolean);
+      return items;
+    }
+
+    function getSortedPublicConcepts() {
+      const specialAlpha = getSpecialAlphaConcept();
+      return state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => Number(getBoardItem(b)?.avgChange1h ?? -999) - Number(getBoardItem(a)?.avgChange1h ?? -999));
+    }
+
+    function getSortedMovers(board) {
+      const movers = Array.isArray(board?.allMovers)
+        ? board.allMovers
+        : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+      return movers
+        .slice()
+        .sort((a, b) => Number(b.changePercent1h ?? -999) - Number(a.changePercent1h ?? -999));
+    }
+
+    function getTopOneHourToken() {
+      let best = null;
+      for (const concept of getSortedPublicConcepts()) {
+        const board = getBoardItem(concept);
+        for (const item of getSortedMovers(board)) {
+          const pct = Number(item.changePercent1h);
+          if (!Number.isFinite(pct)) continue;
+          if (!best || pct > best.changePercent1h) {
+            best = { ...item, conceptId: concept.id, conceptName: concept.name, changePercent1h: pct };
+          }
+        }
+      }
+      return best;
+    }
+
+    function renderSummary() {
+      const board = Array.isArray(snapshot.conceptBoard) ? snapshot.conceptBoard : [];
+      const sorted = board.slice().sort((a, b) => Number(b.avgChange1h ?? -999) - Number(a.avgChange1h ?? -999));
+      const strongest = sorted[0] || null;
+      const activeCount = board.filter(item => Number(item.positiveCount || 0) > 0).length;
+      const tokenCount = state.concepts.reduce((sum, item) => sum + normalizeTokenItems(item).length, 0);
+      const stamp = snapshot.generatedAt ? new Date(snapshot.generatedAt).toLocaleString('zh-CN') : '-';
+      summaryGrid.innerHTML = `
+        <div class="summary-card"><div class="label">鏉垮潡鏁伴噺</div><div class="value">${state.concepts.length}</div></div>
+        <div class="summary-card"><div class="label">杩借釜浠ｅ竵</div><div class="value">${tokenCount}</div></div>
+        <div class="summary-card"><div class="label">涓婃定鏉垮潡</div><div class="value">${activeCount}</div></div>
+        <div class="summary-card"><div class="label">15鍒嗛挓鏈€寮烘澘鍧?/div><div class="value ${pctClass(strongest?.avgChange15m)}">${strongest ? esc(strongest.name) : '-'}</div><div class="meta">${strongest ? fmtPct(strongest.avgChange15m) : stamp}</div></div>
+      `;
+    }
+
+    function renderSectors() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵鍒楄〃銆?/div>';
+        return;
+      }
+
+      const specialAlpha = getSpecialAlphaConcept();
+      const concepts = state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => {
+        const ab = Number(getBoardItem(a)?.avgChange1h ?? -999);
+        const bb = Number(getBoardItem(b)?.avgChange1h ?? -999);
+        return bb - ab;
+      });
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg15m)}">${Number.isFinite(avg15m) ? fmtPct(avg15m) : '-'}</div>
+                <div class="leader">15鍒嗛挓鍧囨定骞?/div>
+                <div class="leader">1澶╋細<span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>15m</th><th>24H</th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent15m)}">${Number.isFinite(item.changePercent15m) ? fmtPct(item.changePercent15m) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent24h)}">${fmtPct(item.changePercent24h)}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="4" class="empty">鏆傛棤鍙敤琛屾儏銆傝纭浠ｅ竵鏄惁鏈?Binance USDT 浜ゆ槗瀵广€?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            ${`
+              <div class="quick-add" data-quick-box="${conceptIndex}">
+                <div class="quick-add-title">蹇€熸坊鍔犱唬甯佸埌銆?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                  <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                    <option value="binance">Binance</option>
+                    <option value="onchain">閾句笂</option>
+                  </select>
+                  <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                    <option value="">閫夋嫨閾?/option>
+                    <option value="1">ETH</option>
+                    <option value="56">BSC</option>
+                    <option value="8453">BASE</option>
+                    <option value="501">SOL</option>
+                    <option value="ton">TON</option>
+                  </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                  <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">娣诲姞骞朵繚瀛?/button>
+                </div>
+              </div>
+            `}
+            ${`
+              <div class="quick-add" data-quick-box="${conceptIndex}">
+                <div class="quick-add-title">蹇€熸坊鍔犱唬甯佸埌銆?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                  <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                    <option value="binance">Binance</option>
+                    <option value="onchain">閾句笂</option>
+                  </select>
+                  <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                    <option value="">閫夋嫨閾?/option>
+                    <option value="1">ETH</option>
+                    <option value="56">BSC</option>
+                    <option value="8453">BASE</option>
+                    <option value="501">SOL</option>
+                    <option value="ton">TON</option>
+                  </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                  <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">娣诲姞骞朵繚瀛?/button>
+                </div>
+              </div>
+            `}
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEditor() {
+      if (!state.concepts.length) {
+        editorList.innerHTML = '<div class="empty">鏆傛棤鏉垮潡锛岀偣鍑烩€滄柊澧炴澘鍧椻€濆紑濮嬨€?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      editorList.innerHTML = state.concepts
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => !specialAlpha || item.id !== specialAlpha.id)
+        .map(({ item, index }) => `
+        <div class="editor-item" data-index="${index}">
+          <div class="editor-item-head">
+            <strong>鏉垮潡 ${index + 1}</strong>
+            <button type="button" class="btn danger" data-delete="${index}">鍒犻櫎</button>
+          </div>
+          <div class="editor-grid">
+            <input data-field="name" data-index="${index}" value="${esc(item.name || '')}" placeholder="鏉垮潡鍚嶇О锛屼緥濡傦細瀛樺偍" />
+            <input data-field="tokens" data-index="${index}" value="${esc((item.tokens || []).join(','))}" placeholder="浠ｅ竵鍒楄〃锛屼緥濡傦細FIL,AR,STORJ" />
+            <textarea data-field="notes" data-index="${index}" placeholder="澶囨敞锛屽彲閫?>${esc(item.notes || '')}</textarea>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderEditorV2() {
+      if (!state.concepts.length) {
+        editorList.innerHTML = '<div class="empty">鏆傛棤鏉垮潡锛岀偣鍑烩€滄柊澧炴澘鍧椻€濆紑濮嬨€?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      editorList.innerHTML = state.concepts
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => !specialAlpha || item.id !== specialAlpha.id)
+        .map(({ item, index }) => `
+        <div class="editor-item" data-index="${index}">
+          <div class="editor-item-head">
+            <strong>鏉垮潡 ${index + 1}</strong>
+            <button type="button" class="btn danger" data-delete="${index}">鍒犻櫎鏉垮潡</button>
+          </div>
+          <div class="editor-grid">
+            <input data-field="name" data-index="${index}" value="${esc(item.name || '')}" placeholder="鏉垮潡鍚嶇О锛屼緥濡傦細瀛樺偍銆丮EME銆丄I" />
+            <textarea data-field="notes" data-index="${index}" placeholder="鏉垮潡澶囨敞锛屽彲閫?>${esc(item.notes || '')}</textarea>
+            <div class="token-editor">
+              <div class="hint">閫愪釜娣诲姞浠ｅ竵锛欱inance 鐜拌揣鍙～ Symbol锛涢摼涓婁唬甯佽閫夋嫨閾惧苟濉啓鍚堢害鍦板潃銆傚娉ㄤ細灞曠ず鍦ㄥ墠鍙拌〃鏍奸噷銆?/div>
+              ${normalizeTokenItems(item).map((token, tokenIndex) => `
+                <div class="token-row" data-token-row="${tokenIndex}">
+                  <input data-token-field="symbol" data-index="${index}" data-token-index="${tokenIndex}" value="${esc(token.symbol)}" placeholder="浠ｅ竵 Symbol" />
+                  <select data-token-field="assetType" data-index="${index}" data-token-index="${tokenIndex}">
+                    <option value="binance" ${token.assetType !== 'onchain' ? 'selected' : ''}>Binance</option>
+                    <option value="onchain" ${token.assetType === 'onchain' ? 'selected' : ''}>閾句笂</option>
+                  </select>
+                  <select data-token-field="chainId" data-index="${index}" data-token-index="${tokenIndex}">
+                    <option value="" ${!token.chainId ? 'selected' : ''}>閫夋嫨閾?/option>
+                    <option value="1" ${token.chainId === '1' ? 'selected' : ''}>ETH</option>
+                    <option value="56" ${token.chainId === '56' ? 'selected' : ''}>BSC</option>
+                    <option value="8453" ${token.chainId === '8453' ? 'selected' : ''}>BASE</option>
+                    <option value="501" ${token.chainId === '501' || token.chainId === 'sol' ? 'selected' : ''}>SOL</option>
+                    <option value="ton" ${token.chainId === 'ton' ? 'selected' : ''}>TON</option>
+                  </select>
+                  <input data-token-field="contractAddress" data-index="${index}" data-token-index="${tokenIndex}" value="${esc(token.contractAddress)}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <textarea data-token-field="notes" data-index="${index}" data-token-index="${tokenIndex}" placeholder="杩欎釜浠ｅ竵涓轰粈涔堝拰鏉垮潡鑱斿姩锛熷彲濉娉?>${esc(token.notes)}</textarea>
+                  <button type="button" class="btn danger mini-btn" data-delete-token="${index}:${tokenIndex}">鍒犻櫎浠ｅ竵</button>
+                </div>
+              `).join('')}
+              <button type="button" class="btn secondary mini-btn" data-add-token="${index}">鏂板浠ｅ竵</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderEditorV3() {
+      if (!state.concepts.length) {
+        editorList.innerHTML = '<div class="empty">鏆傛棤鏉垮潡锛岀偣鍑烩€滄柊澧炴澘鍧椻€濆紑濮嬨€?/div>';
+        return;
+      }
+      editorList.innerHTML = state.concepts.map((item, index) => `
+        <div class="editor-item" data-index="${index}">
+          <div class="editor-item-head">
+            <strong>鏉垮潡 ${index + 1}</strong>
+            <button type="button" class="btn danger" data-delete="${index}">鍒犻櫎鏉垮潡</button>
+          </div>
+          <div class="editor-grid">
+            <input data-field="name" data-index="${index}" value="${esc(item.name || '')}" placeholder="鏉垮潡鍚嶇О锛屼緥濡傦細浼樿川甯佸畨alpha" />
+            <textarea data-field="notes" data-index="${index}" placeholder="鏉垮潡澶囨敞锛屽彲閫?>${esc(item.notes || '')}</textarea>
+            <div class="token-editor">
+              <div class="hint">Alpha 鐗规畩鏍忕洰鏀寔锛氬叆鍦哄競鍊煎尯闂淬€佷笂鎵€鑺傜偣銆傚競鍊煎崟浣嶇洿鎺ュ～缇庡厓鏁板瓧锛屼緥濡?3000000銆?/div>
+              ${normalizeTokenItems(item).map((token, tokenIndex) => `
+                <div class="token-row" data-token-row="${tokenIndex}">
+                  <input data-token-field="symbol" data-index="${index}" data-token-index="${tokenIndex}" value="${esc(token.symbol)}" placeholder="Symbol" />
+                  <select data-token-field="assetType" data-index="${index}" data-token-index="${tokenIndex}">
+                    <option value="binance" ${token.assetType !== 'onchain' ? 'selected' : ''}>Binance</option>
+                    <option value="onchain" ${token.assetType === 'onchain' ? 'selected' : ''}>閾句笂</option>
+                  </select>
+                  <select data-token-field="chainId" data-index="${index}" data-token-index="${tokenIndex}">
+                    <option value="" ${!token.chainId ? 'selected' : ''}>閫夋嫨閾?/option>
+                    <option value="1" ${token.chainId === '1' ? 'selected' : ''}>ETH</option>
+                    <option value="56" ${token.chainId === '56' ? 'selected' : ''}>BSC</option>
+                    <option value="8453" ${token.chainId === '8453' ? 'selected' : ''}>BASE</option>
+                    <option value="501" ${token.chainId === '501' || token.chainId === 'sol' ? 'selected' : ''}>SOL</option>
+                    <option value="ton" ${token.chainId === 'ton' ? 'selected' : ''}>TON</option>
+                  </select>
+                  <input data-token-field="contractAddress" data-index="${index}" data-token-index="${tokenIndex}" value="${esc(token.contractAddress)}" placeholder="閾句笂鍚堢害鍦板潃" />
+                  <input data-token-field="entryMarketCapMin" data-index="${index}" data-token-index="${tokenIndex}" value="${token.entryMarketCapMin ?? ''}" placeholder="鍏ュ満甯傚€间笅闄? />
+                  <input data-token-field="entryMarketCapMax" data-index="${index}" data-token-index="${tokenIndex}" value="${token.entryMarketCapMax ?? ''}" placeholder="鍏ュ満甯傚€间笂闄? />
+                  <label class="hint"><input type="checkbox" data-token-field="listingNodes.binanceFutures" data-index="${index}" data-token-index="${tokenIndex}" ${token.listingNodes?.binanceFutures ? 'checked' : ''} /> 甯佸畨鍚堢害</label>
+                  <label class="hint"><input type="checkbox" data-token-field="listingNodes.binanceSpot" data-index="${index}" data-token-index="${tokenIndex}" ${token.listingNodes?.binanceSpot ? 'checked' : ''} /> 甯佸畨鐜拌揣</label>
+                  <label class="hint"><input type="checkbox" data-token-field="listingNodes.coinbase" data-index="${index}" data-token-index="${tokenIndex}" ${token.listingNodes?.coinbase ? 'checked' : ''} /> Coinbase</label>
+                  <label class="hint"><input type="checkbox" data-token-field="listingNodes.upbit" data-index="${index}" data-token-index="${tokenIndex}" ${token.listingNodes?.upbit ? 'checked' : ''} /> Upbit</label>
+                  <textarea data-token-field="notes" data-index="${index}" data-token-index="${tokenIndex}" placeholder="澶囨敞">${esc(token.notes)}</textarea>
+                  <button type="button" class="btn danger mini-btn" data-delete-token="${index}:${tokenIndex}">鍒犻櫎浠ｅ竵</button>
+                </div>
+              `).join('')}
+              <button type="button" class="btn secondary mini-btn" data-add-token="${index}">鏂板浠ｅ竵</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSummaryV2() {
+      const board = Array.isArray(snapshot.conceptBoard) ? snapshot.conceptBoard : [];
+      const sorted = board.slice().sort((a, b) => Number(b.avgChange1h ?? -999) - Number(a.avgChange1h ?? -999));
+      const strongest = sorted[0] || null;
+      const activeCount = board.filter(item => Number(item.positiveCount || 0) > 0).length;
+      const tokenCount = state.concepts.reduce((sum, item) => sum + normalizeTokenItems(item).length, 0);
+      const stamp = snapshot.generatedAt ? new Date(snapshot.generatedAt).toLocaleString('zh-CN') : '-';
+      const topToken = getTopOneHourToken();
+      spotlightPanel.innerHTML = topToken ? `
+        <button type="button" class="spotlight-button" data-spotlight-sector="${esc(topToken.conceptId)}">
+          <span>
+            <span class="spotlight-kicker">1灏忔椂鏈€寮轰唬甯?/span>
+            <span class="spotlight-title">${esc(topToken.token)} 路 ${esc(topToken.conceptName || '鏈煡鏉垮潡')}</span>
+            <span class="spotlight-meta">鐐瑰嚮灞曞紑瀵瑰簲姒傚康鏉垮潡 路 褰撳墠浠锋牸 $${fmtPrice(topToken.lastPrice)}</span>
+          </span>
+          <span class="spotlight-pct">${fmtPct(topToken.changePercent1h)}</span>
+        </button>
+      ` : '<div class="empty">鏆傛棤 1灏忔椂娑ㄥ箙鏁版嵁銆?/div>';
+      summaryGrid.innerHTML = `
+        <div class="summary-card"><div class="label">鏉垮潡鏁伴噺</div><div class="value">${state.concepts.length}</div></div>
+        <div class="summary-card"><div class="label">杩借釜浠ｅ竵</div><div class="value">${tokenCount}</div></div>
+        <div class="summary-card"><div class="label">涓婃定鏉垮潡</div><div class="value">${activeCount}</div></div>
+        <div class="summary-card"><div class="label">1灏忔椂鏈€寮烘澘鍧?/div><div class="value ${pctClass(strongest?.avgChange1h)}">${strongest ? esc(strongest.name) : '-'}</div><div class="meta">${strongest ? fmtPct(strongest.avgChange1h) : stamp}</div></div>
+      `;
+    }
+
+    function renderSectorsV2() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      const concepts = state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => {
+        const ab = Number(getBoardItem(a)?.avgChange1h ?? -999);
+        const bb = Number(getBoardItem(b)?.avgChange1h ?? -999);
+        return bb - ab;
+      });
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const conceptIndex = state.concepts.findIndex(item => item.id === concept.id);
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                <div class="leader">1灏忔椂鍧囨定骞?/div>
+                <div class="leader">1澶╋細<span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>1H</th><th>24H</th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent24h)}">${fmtPct(item.changePercent24h)}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="4" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            ${`
+              <div class="quick-add" data-quick-box="${conceptIndex}">
+                <div class="quick-add-title">蹇€熸坊鍔犱唬甯佸埌銆?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                  <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                    <option value="binance">Binance</option>
+                    <option value="onchain">閾句笂</option>
+                  </select>
+                  <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                    <option value="">閫夋嫨閾?/option>
+                    <option value="1">ETH</option>
+                    <option value="56">BSC</option>
+                    <option value="8453">BASE</option>
+                    <option value="501">SOL</option>
+                    <option value="ton">TON</option>
+                  </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                  <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">娣诲姞骞朵繚瀛?/button>
+                </div>
+              </div>
+            `}
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSectorsV3() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      const concepts = state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => {
+        const ab = Number(getBoardItem(a)?.avgChange1h ?? -999);
+        const bb = Number(getBoardItem(b)?.avgChange1h ?? -999);
+        return bb - ab;
+      });
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                <div class="leader">1灏忔椂鍧囨定骞?/div>
+                <div class="leader">1澶╋細<span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="6" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSectorsV4() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const concepts = state.concepts.slice().sort((a, b) => {
+        const ab = Number(getBoardItem(a)?.avgChange1h ?? -999);
+        const bb = Number(getBoardItem(b)?.avgChange1h ?? -999);
+        return bb - ab;
+      });
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const conceptIndex = state.concepts.findIndex(item => item.id === concept.id);
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                <div class="leader">1灏忔椂鍧囨定骞?/div>
+                <div class="leader">24H锛?span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="6" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            <div class="quick-add" data-quick-box="${conceptIndex}">
+              <div class="quick-add-title">蹇€熸坊鍔犱唬甯佸埌銆?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+              <div class="quick-add-grid">
+                <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                  <option value="binance">Binance</option>
+                  <option value="onchain">閾句笂</option>
+                </select>
+                <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                  <option value="">閫夋嫨閾?/option>
+                  <option value="1">ETH</option>
+                  <option value="56">BSC</option>
+                  <option value="8453">BASE</option>
+                  <option value="501">SOL</option>
+                  <option value="ton">TON</option>
+                </select>
+                <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">娣诲姞骞朵繚瀛?/button>
+              </div>
+            </div>
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSectorsV5() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      const concepts = state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => {
+        const ab = Number(getBoardItem(a)?.avgChange1h ?? -999);
+        const bb = Number(getBoardItem(b)?.avgChange1h ?? -999);
+        return bb - ab;
+      });
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const conceptIndex = state.concepts.findIndex(item => item.id === concept.id);
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                <div class="leader">1灏忔椂鍧囨定骞?/div>
+                <div class="leader">24H锛?span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="6" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            <div class="quick-add" data-quick-box="${conceptIndex}">
+              <button type="button" class="btn secondary mini-btn quick-add-toggle" data-quick-toggle="${conceptIndex}">+ 娣诲姞浠ｅ竵</button>
+              <div class="quick-add-form">
+                <div class="quick-add-title">娣诲姞鍒般€?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                  <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                    <option value="binance">Binance</option>
+                    <option value="onchain">閾句笂</option>
+                  </select>
+                  <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                    <option value="">閫夋嫨閾?/option>
+                    <option value="1">ETH</option>
+                    <option value="56">BSC</option>
+                    <option value="8453">BASE</option>
+                    <option value="501">SOL</option>
+                    <option value="ton">TON</option>
+                  </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                </div>
+                <div class="quick-add-actions">
+                  <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">纭娣诲姞</button>
+                </div>
+              </div>
+            </div>
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSectorsV6() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const specialAlpha = getSpecialAlphaConcept();
+      const concepts = state.concepts
+        .filter(concept => !specialAlpha || concept.id !== specialAlpha.id)
+        .slice()
+        .sort((a, b) => Number(getBoardItem(b)?.avgChange1h ?? -999) - Number(getBoardItem(a)?.avgChange1h ?? -999));
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+      sectorGrid.innerHTML = concepts.map(concept => {
+        const conceptIndex = state.concepts.findIndex(item => item.id === concept.id);
+        const board = getBoardItem(concept);
+        const movers = Array.isArray(board?.topMovers) ? board.topMovers : [];
+        const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+        const avg1h = Number(board?.avgChange1h);
+        const avg24h = Number(board?.avgChange24h);
+        const leader = board?.leaderNow || movers[0]?.token || '-';
+        return `
+          <div class="sector-card">
+            <div class="sector-head">
+              <div>
+                <div class="sector-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</div>
+                <div class="sector-note">${esc(concept.notes || '鏆傛棤澶囨敞')}</div>
+              </div>
+              <div class="sector-stats">
+                <div class="avg ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                <div class="leader">1灏忔椂鍧囨定骞?/div>
+                <div class="leader">1澶╋細<span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead><tr><th>浠ｅ竵</th><th>浠锋牸</th><th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th></tr></thead>
+                <tbody>
+                  ${movers.length ? movers.map(item => `
+                    <tr>
+                      <td><strong>${esc(item.token)}</strong>${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                      <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                      <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                      <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr><td colspan="6" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+            <div class="quick-add" data-quick-box="${conceptIndex}">
+              <button type="button" class="btn secondary mini-btn quick-add-toggle" data-quick-toggle="${conceptIndex}">+ 娣诲姞浠ｅ竵</button>
+              <div class="quick-add-form">
+                <div class="quick-add-title">娣诲姞鍒般€?{esc(concept.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${conceptIndex}" placeholder="Symbol" />
+                  <select data-quick-field="assetType" data-concept-index="${conceptIndex}">
+                    <option value="binance">Binance</option>
+                    <option value="onchain">閾句笂</option>
+                  </select>
+                  <select data-quick-field="chainId" data-concept-index="${conceptIndex}">
+                    <option value="">閫夋嫨閾?/option>
+                    <option value="1">ETH</option>
+                    <option value="56">BSC</option>
+                    <option value="8453">BASE</option>
+                    <option value="501">SOL</option>
+                    <option value="ton">TON</option>
+                  </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${conceptIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${conceptIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                </div>
+                <div class="quick-add-actions">
+                  <button type="button" class="btn mini-btn" data-quick-add="${conceptIndex}">纭娣诲姞</button>
+                </div>
+              </div>
+            </div>
+            ${missingTokens.length ? `
+              <div class="missing-list">
+                <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                ${missingTokens.slice(0, 12).map(item => `
+                  <div class="missing-item">
+                    <strong>${esc(item.token)}</strong>
+                    ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                    <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSectorsV7() {
+      if (!state.concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏆傛棤鏉垮潡銆傝繘鍏ョ鐞嗘ā寮忓悗锛屾柊澧炴澘鍧楀苟濉啓浠ｅ竵銆?/div>';
+        return;
+      }
+      const concepts = getSortedPublicConcepts();
+      if (!concepts.length) {
+        sectorGrid.innerHTML = '<div class="empty">鏅€氭澘鍧楁殏鏃犲唴瀹广€備紭璐ㄥ竵瀹?Alpha 宸茬Щ鍔ㄥ埌涓婃柟鐗规畩瑙傚療闈㈡澘銆?/div>';
+        return;
+      }
+      if (!selectedSectorId || !concepts.some(concept => concept.id === selectedSectorId)) {
+        selectedSectorId = concepts[0].id;
+      }
+      const selected = concepts.find(concept => concept.id === selectedSectorId) || concepts[0];
+      const selectedIndex = state.concepts.findIndex(item => item.id === selected.id);
+      const board = getBoardItem(selected);
+      const movers = getSortedMovers(board);
+      const selectedTokenItems = ensureTokenItems(selected);
+      const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+      const avg1h = Number(board?.avgChange1h);
+      const avg24h = Number(board?.avgChange24h);
+      const leader = board?.leaderNow || movers[0]?.token || '-';
+      sectorGrid.innerHTML = `
+        <div class="linkage-layout">
+          <aside class="sector-sidebar">
+            <div class="sector-sidebar-head">
+              <div class="sector-sidebar-title">1灏忔椂鐑害鎺掕</div>
+              <div class="sector-sidebar-sub">鐐瑰嚮鏉垮潡鏌ョ湅浠ｅ竵鏄庣粏</div>
+              ${adminMode ? `<button type="button" class="btn mini-btn" data-inline-add-sector="1" style="margin-top:12px;width:100%;">鏂板鏉垮潡</button>` : ''}
+            </div>
+            <div class="sector-nav-list">
+              ${concepts.map((concept, index) => {
+                const itemBoard = getBoardItem(concept);
+                const itemAvg1h = Number(itemBoard?.avgChange1h);
+                const itemLeader = itemBoard?.leaderNow || getSortedMovers(itemBoard)[0]?.token || '-';
+                return `
+                  <button type="button" class="sector-nav-item ${concept.id === selected.id ? 'active' : ''}" data-sector-select="${esc(concept.id)}">
+                    <span class="sector-rank">#${index + 1}</span>
+                    <span>
+                      <span class="sector-nav-name">${esc(concept.name || '鏈懡鍚嶆澘鍧?)}</span>
+                      <span class="sector-nav-meta">鏈€寮猴細${esc(itemLeader)}</span>
+                    </span>
+                    <span class="sector-nav-pct ${pctClass(itemAvg1h)}">${Number.isFinite(itemAvg1h) ? fmtPct(itemAvg1h) : '-'}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </aside>
+          <section class="sector-detail">
+            <div class="sector-detail-card">
+              <div class="sector-detail-hero">
+                <div>
+                  ${adminMode ? `
+                    <div class="inline-admin-grid">
+                      <input data-inline-concept-field="name" data-concept-index="${selectedIndex}" value="${esc(selected.name || '')}" placeholder="鏉垮潡鍚嶇О" />
+                      <textarea data-inline-concept-field="notes" data-concept-index="${selectedIndex}" placeholder="鏉垮潡澶囨敞">${esc(selected.notes || '')}</textarea>
+                      <button type="button" class="btn" data-inline-save="1">淇濆瓨淇敼</button>
+                    </div>
+                  ` : `
+                    <div class="sector-detail-name">${esc(selected.name || '鏈懡鍚嶆澘鍧?)}</div>
+                    <div class="sector-detail-note">${esc(selected.notes || '鏆傛棤澶囨敞')}</div>
+                  `}
+                </div>
+                <div class="sector-detail-score">
+                  <div class="leader">1灏忔椂鍧囨定骞?/div>
+                  <div class="value ${pctClass(avg1h)}">${Number.isFinite(avg1h) ? fmtPct(avg1h) : '-'}</div>
+                  <div class="leader">1澶╋細<span class="${pctClass(avg24h)}">${Number.isFinite(avg24h) ? fmtPct(avg24h) : '-'}</span> 路 鏈€寮猴細${esc(leader)}</div>
+                </div>
+              </div>
+              <div class="sector-table-wrap">
+                <table>
+                  <thead><tr><th>鎺掑簭</th><th>浠ｅ竵</th><th>浠锋牸</th><th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th></tr></thead>
+                  <tbody>
+                    ${movers.length ? movers.map((item, index) => {
+                      const tokenIndex = selectedTokenItems.findIndex(token => token.symbol === String(item.token || '').toUpperCase());
+                      const token = tokenIndex >= 0 ? selectedTokenItems[tokenIndex] : null;
+                      return `
+                      <tr>
+                        <td class="sector-rank">#${index + 1}</td>
+                        <td>
+                          ${adminMode && token ? `
+                            <div class="inline-token-editor">
+                              <div class="topline">
+                                <input data-inline-token-field="symbol" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}" value="${esc(token.symbol)}" placeholder="Symbol" />
+                                <select data-inline-token-field="assetType" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}">
+                                  <option value="binance" ${token.assetType !== 'onchain' ? 'selected' : ''}>Binance</option>
+                                  <option value="onchain" ${token.assetType === 'onchain' ? 'selected' : ''}>閾句笂</option>
+                                </select>
+                                <select data-inline-token-field="chainId" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}">
+                                  <option value="" ${!token.chainId ? 'selected' : ''}>閫夋嫨閾?/option>
+                                  <option value="1" ${token.chainId === '1' ? 'selected' : ''}>ETH</option>
+                                  <option value="56" ${token.chainId === '56' ? 'selected' : ''}>BSC</option>
+                                  <option value="8453" ${token.chainId === '8453' ? 'selected' : ''}>BASE</option>
+                                  <option value="501" ${token.chainId === '501' || token.chainId === 'sol' ? 'selected' : ''}>SOL</option>
+                                  <option value="ton" ${token.chainId === 'ton' ? 'selected' : ''}>TON</option>
+                                </select>
+                                <input data-inline-token-field="contractAddress" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}" value="${esc(token.contractAddress)}" placeholder="鍚堢害鍦板潃锛屽彲閫? />
+                                <button type="button" class="btn danger mini-btn" data-inline-delete-token="${selectedIndex}:${tokenIndex}">鍒犻櫎</button>
+                              </div>
+                              <div class="linkline">
+                                <input data-inline-token-field="twitterUrl" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}" value="${esc(token.twitterUrl || '')}" placeholder="椤圭洰鏂?Twitter 閾炬帴锛屽彲閫? />
+                                <input data-inline-token-field="statusTags" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}" value="${esc((token.statusTags || []).join('锛?))}" placeholder="鏍囩锛氶摼涓婏紝甯佸畨Alpha锛屽竵瀹夊悎绾? />
+                                <textarea data-inline-token-field="notes" data-concept-index="${selectedIndex}" data-token-index="${tokenIndex}" placeholder="浠ｅ竵澶囨敞">${esc(token.notes)}</textarea>
+                              </div>
+                            </div>
+                          ` : `
+                            ${item.twitterUrl ? `<a class="alpha-token-link" href="${esc(item.twitterUrl)}" target="_blank" rel="noopener noreferrer"><strong>${esc(item.token)}</strong></a>` : `<strong>${esc(item.token)}</strong>`}
+                            ${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}
+                            ${item.assetType === 'onchain' && item.contractAddress ? `<button type="button" class="contract-copy" data-copy-contract="${esc(item.contractAddress)}">澶嶅埗鍚堢害</button>` : ''}
+                            ${statusTagHtml(deriveStatusTags(item, token))}
+                            ${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}
+                          `}
+                        </td>
+                        <td class="price">$${fmtPrice(item.lastPrice)}</td>
+                        <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                        <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                        <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                        <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                      </tr>
+                    `; }).join('') : `
+                      <tr><td colspan="7" class="empty">鏆傛棤鍙敤琛屾儏銆傝妫€鏌ヤ唬甯佺被鍨嬨€侀摼銆佸悎绾﹀湴鍧€鎴栦氦鏄撳銆?/td></tr>
+                    `}
+                  </tbody>
+                </table>
+              </div>
+              ${adminMode ? `
+                <div class="quick-add open" data-quick-box="${selectedIndex}">
+                  <div class="quick-add-title">娣诲姞鍒般€?{esc(selected.name || '鏈懡鍚嶆澘鍧?)}銆嶏紙闇€绠＄悊鍛樺瘑鐮侊級</div>
+                  <div class="quick-add-grid">
+                  <input data-quick-field="symbol" data-concept-index="${selectedIndex}" placeholder="Symbol" />
+                    <select data-quick-field="assetType" data-concept-index="${selectedIndex}">
+                      <option value="binance">鑷姩璇嗗埆 / Binance</option>
+                      <option value="onchain">閾句笂</option>
+                    </select>
+                    <select data-quick-field="chainId" data-concept-index="${selectedIndex}">
+                      <option value="">閫夋嫨閾?/option>
+                      <option value="1">ETH</option>
+                      <option value="56">BSC</option>
+                      <option value="8453">BASE</option>
+                      <option value="501">SOL</option>
+                      <option value="ton">TON</option>
+                    </select>
+                  <input data-quick-field="contractAddress" data-concept-index="${selectedIndex}" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+                  <input data-quick-field="twitterUrl" data-concept-index="${selectedIndex}" placeholder="椤圭洰鏂?Twitter 閾炬帴锛屽彲閫? />
+                  <input data-quick-field="notes" data-concept-index="${selectedIndex}" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+                  </div>
+                  <div class="quick-add-actions">
+                    <button type="button" class="btn mini-btn" data-quick-add="${selectedIndex}">纭娣诲姞</button>
+                  </div>
+                </div>
+              ` : ''}
+              ${missingTokens.length ? `
+                <div class="missing-list">
+                  <div class="missing-title">浠ヤ笅浠ｅ竵鏆傛湭鏄剧ず锛岃妫€鏌ョ被鍨嬨€侀摼鎴栧悎绾﹀湴鍧€</div>
+                  ${missingTokens.slice(0, 12).map(item => `
+                    <div class="missing-item">
+                      <strong>${esc(item.token)}</strong>
+                      ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                      <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+                      ${adminMode ? `<div style="margin-top:8px;"><button type="button" class="btn danger mini-btn" data-inline-delete-missing="${selectedIndex}|${esc(String(item.token || '').toUpperCase())}|${esc(String(item.contractAddress || '').toLowerCase())}">鍒犻櫎杩欎釜浠ｅ竵</button></div>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderSpecialAlphaPanel() {
+      const concept = getSpecialAlphaConcept();
+      const board = concept ? getBoardItem(concept) : null;
+      const rows = Array.isArray(board?.allMovers) ? board.allMovers : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+      if (!concept || !rows.length) {
+        specialAlphaPanel.style.display = 'none';
+        specialAlphaPanel.innerHTML = '';
+        return;
+      }
+      specialAlphaPanel.style.display = '';
+      specialAlphaPanel.innerHTML = `
+        <div class="top" style="margin-bottom:12px;">
+          <div>
+            <h2>浼樿川甯佸畨 Alpha 鐗规畩瑙傚療</h2>
+            <p>鍗曠嫭璺熻釜 Alpha 鏍囩殑鐨勫綋鍓嶅競鍊笺€佸缓璁叆鍦哄競鍊煎尯闂村拰涓婃墍鑺傜偣銆傚綋鍓嶅競鍊艰繘鍏ュ缓璁尯闂存樉绀虹豢鑹诧紝鍚﹀垯鏄剧ず绾㈣壊銆?/p>
+          </div>
+        </div>
+        <div style="overflow:auto;">
+          <table class="alpha-special-table">
+            <thead><tr><th>浠ｅ竵</th><th>褰撳墠甯傚€?/th><th>寤鸿鍏ュ満甯傚€煎尯闂?/th><th>涓婃墍鑺傜偣</th><th>1H</th><th>24H</th><th>3D</th></tr></thead>
+            <tbody>
+              ${rows.map(item => {
+                const inRange = isMarketCapInRange(item.currentMarketCap, item.entryMarketCapMin, item.entryMarketCapMax);
+                return `
+                  <tr>
+                    <td><strong>${esc(item.token)}</strong>${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                    <td class="${inRange ? 'marketcap-good' : 'marketcap-bad'}">${fmtMarketCap(item.currentMarketCap)}</td>
+                    <td>${fmtMarketCap(item.entryMarketCapMin)} - ${fmtMarketCap(item.entryMarketCapMax)}</td>
+                    <td>${listingNodeHtml(item.listingNodes)}</td>
+                    <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent24h)}">${fmtPct(item.changePercent24h)}</td>
+                    <td class="change ${pctClass(item.changePercent3d)}">${Number.isFinite(item.changePercent3d) ? fmtPct(item.changePercent3d) : '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderSpecialAlphaPanelV2() {
+      const concept = getSpecialAlphaConcept();
+      const board = concept ? getBoardItem(concept) : null;
+      const rows = Array.isArray(board?.allMovers) ? board.allMovers : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+      const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+      const conceptIndex = concept ? state.concepts.findIndex(item => item.id === concept.id) : -1;
+      if (!concept || !rows.length || conceptIndex < 0) {
+        specialAlphaPanel.style.display = 'none';
+        specialAlphaPanel.innerHTML = '';
+        return;
+      }
+      specialAlphaPanel.style.display = '';
+      specialAlphaPanel.innerHTML = `
+        <div class="top" style="margin-bottom:12px;">
+          <div>
+            <h2>浼樿川甯佸畨 Alpha 鐗规畩瑙傚療</h2>
+            <p>鐩存帴鍦ㄨ繖閲岀淮鎶ゅ缓璁叆鍦哄競鍊煎尯闂村拰涓婃墍鑺傜偣锛屼笉鐢ㄥ啀鍘讳笅闈㈠鏉傜紪杈戝尯銆?/p>
+          </div>
+          <button type="button" class="btn" id="saveAlphaInlineBtn" data-alpha-concept-index="${conceptIndex}">淇濆瓨 Alpha 璁剧疆</button>
+        </div>
+        <div style="overflow:auto;">
+          <table class="alpha-special-table">
+            <thead><tr><th>浠ｅ竵</th><th>褰撳墠甯傚€?/th><th>寤鸿鍏ュ満甯傚€煎尯闂?/th><th>涓婃墍鑺傜偣</th><th>1H</th><th>24H</th><th>3D</th></tr></thead>
+            <tbody>
+              ${rows.map(item => {
+                const inRange = isMarketCapInRange(item.currentMarketCap, item.entryMarketCapMin, item.entryMarketCapMax);
+                return `
+                  <tr>
+                    <td><strong>${esc(item.token)}</strong>${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                    <td class="${inRange ? 'marketcap-good' : 'marketcap-bad'}">${fmtMarketCap(item.currentMarketCap)}</td>
+                    <td>
+                      <div class="cap-range">
+                        <input data-alpha-field="entryMarketCapMin" data-alpha-symbol="${esc(item.token)}" value="${item.entryMarketCapMin ?? ''}" placeholder="涓嬮檺" />
+                        <input data-alpha-field="entryMarketCapMax" data-alpha-symbol="${esc(item.token)}" value="${item.entryMarketCapMax ?? ''}" placeholder="涓婇檺" />
+                      </div>
+                    </td>
+                    <td>
+                      <div class="node-lights vertical">
+                        <label class="node-light ${item.listingNodes?.binanceFutures ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceFutures" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceFutures ? 'checked' : ''} /> 甯佸畨鍚堢害</label>
+                        <label class="node-light ${item.listingNodes?.binanceSpot ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceSpot" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceSpot ? 'checked' : ''} /> 甯佸畨鐜拌揣</label>
+                        <label class="node-light ${item.listingNodes?.coinbase ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.coinbase" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.coinbase ? 'checked' : ''} /> Coinbase</label>
+                        <label class="node-light ${item.listingNodes?.upbit ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.upbit" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.upbit ? 'checked' : ''} /> Upbit</label>
+                        <label class="node-light ${item.listingNodes?.bithumb ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.bithumb" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.bithumb ? 'checked' : ''} /> Bithumb</label>
+                      </div>
+                    </td>
+                    <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent24h)}">${fmtPct(item.changePercent24h)}</td>
+                    <td class="change ${pctClass(item.changePercent3d)}">${Number.isFinite(item.changePercent3d) ? fmtPct(item.changePercent3d) : '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        ${missingTokens.length ? `
+          <div class="missing-list" style="margin-top:12px;">
+            <div class="missing-title">宸蹭繚瀛樹絾鏆傛湭鏄剧ず鐨?Alpha 浠ｅ竵</div>
+            ${missingTokens.map(item => `
+              <div class="missing-item">
+                <strong>${esc(item.token)}</strong>
+                ${item.assetType === 'onchain' ? ` 路 閾句笂 路 ${esc(item.chainId || '-')} 路 ${esc(item.contractAddress || '-')}` : ` 路 ${esc(item.pair || '')}`}
+                <br />鍘熷洜锛?{esc(item.reason || 'price not found')}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function renderSpecialAlphaPanelV3() {
+      const concept = getSpecialAlphaConcept();
+      const board = concept ? getBoardItem(concept) : null;
+      const rows = Array.isArray(board?.allMovers) ? board.allMovers : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+      const conceptIndex = concept ? state.concepts.findIndex(item => item.id === concept.id) : -1;
+      if (!concept || !rows.length || conceptIndex < 0) {
+        specialAlphaPanel.style.display = 'none';
+        specialAlphaPanel.innerHTML = '';
+        return;
+      }
+      specialAlphaPanel.style.display = '';
+      specialAlphaPanel.innerHTML = `
+        <div class="top" style="margin-bottom:12px;">
+          <div>
+            <h2>浼樿川甯佸畨 Alpha 鐗规畩瑙傚療</h2>
+            <p>鐩存帴缁存姢寤鸿鍏ュ満浠锋牸鍖洪棿銆傚彲鎵嬪～浠锋牸锛屼篃鍙寜褰撳墠浠峰鍑忕櫨鍒嗘瘮鐢熸垚锛涗笂鎵€鑺傜偣浼氱粨鍚堢洃鎺?API 鑷姩鐐逛寒銆?/p>
+          </div>
+          <button type="button" class="btn" id="saveAlphaInlineBtn" data-alpha-concept-index="${conceptIndex}">淇濆瓨 Alpha 璁剧疆</button>
+        </div>
+        <div style="overflow:auto;">
+          <table class="alpha-special-table">
+            <thead><tr><th>浠ｅ竵</th><th>褰撳墠浠锋牸</th><th>褰撳墠甯傚€?/th><th>寤鸿鍏ュ満浠锋牸鍖洪棿</th><th>涓婃墍鑺傜偣</th><th>1H</th><th>24H</th><th>3D</th></tr></thead>
+            <tbody>
+              ${rows.map(item => {
+                const inRange = isPriceInRange(item.lastPrice, item.entryPriceMin, item.entryPriceMax);
+                return `
+                  <tr>
+                    <td><strong>${esc(item.token)}</strong>${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}</td>
+                    <td class="${inRange ? 'marketcap-good' : 'marketcap-bad'}">$${fmtPrice(item.lastPrice)}</td>
+                    <td>${fmtMarketCap(item.currentMarketCap)}</td>
+                    <td>
+                      <div class="cap-range">
+                        <input data-alpha-field="entryPriceMin" data-alpha-symbol="${esc(item.token)}" value="${item.entryPriceMin ?? ''}" placeholder="浠锋牸涓嬮檺" />
+                        <input data-alpha-field="entryPriceMax" data-alpha-symbol="${esc(item.token)}" value="${item.entryPriceMax ?? ''}" placeholder="浠锋牸涓婇檺" />
+                        <div class="actions" style="gap:4px;margin-top:2px;">
+                          <input data-alpha-pct="min" data-alpha-symbol="${esc(item.token)}" value="-15" placeholder="涓嬮檺%" style="width:76px;padding:7px 8px;" />
+                          <button type="button" class="btn secondary mini-btn" data-alpha-price-pct="min" data-alpha-symbol="${esc(item.token)}">鎸夊綋鍓嶄环鐢熸垚</button>
+                        </div>
+                        <div class="actions" style="gap:4px;margin-top:2px;">
+                          <input data-alpha-pct="max" data-alpha-symbol="${esc(item.token)}" value="15" placeholder="涓婇檺%" style="width:76px;padding:7px 8px;" />
+                          <button type="button" class="btn secondary mini-btn" data-alpha-price-pct="max" data-alpha-symbol="${esc(item.token)}">鎸夊綋鍓嶄环鐢熸垚</button>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="node-lights">
+                        <label class="node-light ${item.listingNodes?.binanceFutures ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceFutures" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceFutures ? 'checked' : ''} /> 甯佸畨鍚堢害</label>
+                        <label class="node-light ${item.listingNodes?.binanceSpot ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceSpot" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceSpot ? 'checked' : ''} /> 甯佸畨鐜拌揣</label>
+                        <label class="node-light ${item.listingNodes?.coinbase ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.coinbase" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.coinbase ? 'checked' : ''} /> Coinbase</label>
+                        <label class="node-light ${item.listingNodes?.upbit ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.upbit" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.upbit ? 'checked' : ''} /> Upbit</label>
+                        <label class="node-light ${item.listingNodes?.bithumb ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.bithumb" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.bithumb ? 'checked' : ''} /> Bithumb</label>
+                      </div>
+                    </td>
+                    <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent24h)}">${fmtPct(item.changePercent24h)}</td>
+                    <td class="change ${pctClass(item.changePercent3d)}">${Number.isFinite(item.changePercent3d) ? fmtPct(item.changePercent3d) : '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderSpecialAlphaPanelV4() {
+      const concept = getSpecialAlphaConcept();
+      const board = concept ? getBoardItem(concept) : null;
+      const liveRows = Array.isArray(board?.allMovers) ? board.allMovers : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+      const missingTokens = Array.isArray(board?.missingTokens) ? board.missingTokens : [];
+      const liveMap = new Map(liveRows.map(item => [String(item.token || '').toUpperCase(), item]));
+      const missingMap = new Map(missingTokens.map(item => [String(item.token || '').toUpperCase(), item]));
+      const savedItems = concept ? normalizeSpecialAlphaTokens(concept) : [];
+      const rows = savedItems.map(token => {
+        const symbol = String(token.symbol || '').toUpperCase();
+        const live = liveMap.get(symbol) || {};
+        const missing = missingMap.get(symbol) || null;
+        return {
+          ...token,
+          ...live,
+          token: symbol,
+          assetType: 'binance',
+          chainId: '',
+          contractAddress: '',
+          listingNodes: { ...(token.listingNodes || {}), ...(live.listingNodes || {}) },
+          notes: token.notes || live.notes || '',
+          twitterUrl: token.twitterUrl || live.twitterUrl || '',
+          missingReason: missing?.reason || ''
+        };
+      });
+      const conceptIndex = concept ? state.concepts.findIndex(item => item.id === concept.id) : -1;
+      if (!concept || conceptIndex < 0) {
+        specialAlphaPanel.style.display = 'none';
+        specialAlphaPanel.innerHTML = '';
+        return;
+      }
+      specialAlphaPanel.style.display = '';
+      specialAlphaPanel.innerHTML = `
+        <div class="top" style="margin-bottom:12px;">
+          <div>
+            <h2>浼樿川甯佸畨 Alpha 鐗规畩瑙傚療</h2>
+            <p>杩欓噷浣滀负 Alpha 涓撶敤鎺у埗鏉匡細鍙洿鎺ユ柊澧炰唬甯併€佺淮鎶ゆ満鏋勪环/鐩樺墠浠?寮€鐩樹环銆佸娉ㄣ€乀witter 閾炬帴鍜屼笂鎵€鑺傜偣銆傚紑鐩樹环鏃佽竟浼氭寜褰撳墠浠锋牸瀹炴椂璁＄畻娑ㄨ穼骞呫€?/p>
+          </div>
+          ${adminMode ? `<button type="button" class="btn" id="saveAlphaInlineBtn" data-alpha-concept-index="${conceptIndex}">淇濆瓨 Alpha 璁剧疆</button>` : ''}
+        </div>
+        ${adminMode ? `<div class="alpha-add-grid" data-alpha-add-box="${conceptIndex}">
+          <input data-alpha-add-field="symbol" placeholder="Symbol" />
+          <select data-alpha-add-field="assetType">
+            <option value="binance">Binance</option>
+            <option value="onchain">閾句笂</option>
+          </select>
+          <select data-alpha-add-field="chainId">
+            <option value="">閫夋嫨閾?/option>
+            <option value="1">ETH</option>
+            <option value="56">BSC</option>
+            <option value="8453">BASE</option>
+            <option value="501">SOL</option>
+            <option value="ton">TON</option>
+          </select>
+          <input data-alpha-add-field="contractAddress" placeholder="閾句笂鍚堢害鍦板潃锛屽彲閫? />
+          <input data-alpha-add-field="twitterUrl" placeholder="椤圭洰鏂?Twitter 閾炬帴锛屽彲閫? />
+          <input data-alpha-add-field="notes" placeholder="浠ｅ竵澶囨敞锛屽彲閫? />
+          <button type="button" class="btn mini-btn" data-alpha-add-token="${conceptIndex}">纭娣诲姞</button>
+        </div>` : ''}
+        <div style="overflow:auto;">
+          <table class="alpha-special-table">
+            <thead>
+              <tr>
+                <th>浠ｅ竵</th><th>鍙傝€冧环鏍?/th><th>褰撳墠浠锋牸</th><th class="alpha-entry-col">寤鸿鍏ュ満鍖洪棿</th><th>褰撳墠甯傚€?/th>
+                <th>5鍒嗛挓</th><th>1灏忔椂</th><th>1澶?/th><th>7澶?/th><th>涓婃墍鑺傜偣</th><th>澶囨敞 / 閾炬帴</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.length ? rows.map(item => {
+                const openPct = pctFromBase(item.lastPrice, item.openPrice);
+                const hasPrice = Number.isFinite(Number(item.lastPrice)) && Number(item.lastPrice) > 0;
+                const tokenName = item.twitterUrl
+                  ? `<a class="alpha-token-link" href="${esc(item.twitterUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.token)}</a>`
+                  : `<strong>${esc(item.token)}</strong>`;
+                return `
+                  <tr>
+                    <td>
+                      ${tokenName}
+                      ${item.assetType === 'onchain' ? '<div class="leader">閾句笂浠ｅ竵</div>' : ''}
+                      ${item.assetType === 'onchain' && item.contractAddress ? `<button type="button" class="contract-copy" data-copy-contract="${esc(item.contractAddress)}">澶嶅埗鍚堢害</button>` : ''}
+                      ${item.missingReason ? `<div class="leader">寰呰幏鍙栦环鏍硷細${esc(item.missingReason)}</div>` : ''}
+                    </td>
+                    <td>
+                      <div class="alpha-price-stack">
+                        <label>鏈烘瀯 <input class="alpha-mini-input" data-alpha-field="institutionPrice" data-alpha-symbol="${esc(item.token)}" value="${item.institutionPrice ?? ''}" placeholder="0" /></label>
+                        <label>鐩樺墠 <input class="alpha-mini-input" data-alpha-field="preMarketPrice" data-alpha-symbol="${esc(item.token)}" value="${item.preMarketPrice ?? ''}" placeholder="0" /></label>
+                        <label>寮€鐩?<input class="alpha-mini-input" data-alpha-field="openPrice" data-alpha-symbol="${esc(item.token)}" value="${item.openPrice ?? ''}" placeholder="0" /></label>
+                        <span class="open-price-pct ${pctClass(openPct)}">${Number.isFinite(openPct) ? fmtPct(openPct) : '-'}</span>
+                      </div>
+                    </td>
+                    <td class="price">${hasPrice ? `$${fmtPrice(item.lastPrice)}` : '<span class="leader">寰呰幏鍙栦环鏍?/span>'}</td>
+                    <td class="alpha-entry-col">
+                      <div class="alpha-price-stack">
+                        <label>浣庣偣 <input class="alpha-mini-input" data-alpha-field="entryPriceMin" data-alpha-symbol="${esc(item.token)}" value="${item.entryPriceMin ?? ''}" placeholder="浣? /></label>
+                        <label>楂樼偣 <input class="alpha-mini-input" data-alpha-field="entryPriceMax" data-alpha-symbol="${esc(item.token)}" value="${item.entryPriceMax ?? ''}" placeholder="楂? /></label>
+                      </div>
+                    </td>
+                    <td>${fmtMarketCap(item.currentMarketCap)}</td>
+                    <td class="change ${pctClass(item.changePercent5m)}">${Number.isFinite(item.changePercent5m) ? fmtPct(item.changePercent5m) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent1h)}">${Number.isFinite(item.changePercent1h) ? fmtPct(item.changePercent1h) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent1d ?? item.changePercent24h)}">${Number.isFinite(item.changePercent1d ?? item.changePercent24h) ? fmtPct(item.changePercent1d ?? item.changePercent24h) : '-'}</td>
+                    <td class="change ${pctClass(item.changePercent7d)}">${Number.isFinite(item.changePercent7d) ? fmtPct(item.changePercent7d) : '-'}</td>
+                    <td>
+                      <div class="node-lights vertical">
+                        <label class="node-light ${item.listingNodes?.binanceFutures ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceFutures" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceFutures ? 'checked' : ''} /> 甯佸畨鍚堢害</label>
+                        <label class="node-light ${item.listingNodes?.binanceSpot ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.binanceSpot" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.binanceSpot ? 'checked' : ''} /> 甯佸畨鐜拌揣</label>
+                        <label class="node-light ${item.listingNodes?.coinbase ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.coinbase" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.coinbase ? 'checked' : ''} /> Coinbase</label>
+                        <label class="node-light ${item.listingNodes?.upbit ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.upbit" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.upbit ? 'checked' : ''} /> Upbit</label>
+                        <label class="node-light ${item.listingNodes?.bithumb ? 'on' : ''}"><input type="checkbox" data-alpha-field="listingNodes.bithumb" data-alpha-symbol="${esc(item.token)}" ${item.listingNodes?.bithumb ? 'checked' : ''} /> Bithumb</label>
+                      </div>
+                    </td>
+                    <td>
+                      <button type="button" class="btn secondary mini-btn" data-alpha-edit-note="${esc(item.token)}">缂栬緫澶囨敞</button>
+                      ${adminMode ? `<button type="button" class="btn danger mini-btn" data-alpha-delete-token="${esc(item.token)}">鍒犻櫎</button>` : ''}
+                      <input class="alpha-link-input" data-alpha-field="twitterUrl" data-alpha-symbol="${esc(item.token)}" value="${esc(item.twitterUrl || '')}" placeholder="Twitter 閾炬帴" />
+                      ${item.notes ? `<div class="leader">${esc(item.notes)}</div>` : ''}
+                    </td>
+                  </tr>
+                `;
+              }).join('') : '<tr><td colspan="11" class="empty">鏆傛棤 Alpha 浠ｅ竵銆傚彲鍦ㄤ笂鏂圭洿鎺ユ坊鍔犮€?/td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderSummaryV2();
+      if (adminMode || canViewAlpha) {
+        renderSpecialAlphaPanelV4();
+      } else {
+        specialAlphaPanel.style.display = 'none';
+        specialAlphaPanel.innerHTML = '';
+      }
+      renderSectorsV7();
+      if (adminMode) renderEditorV3();
+    }
+
+    async function loadData() {
+      if (!whitelistLoggedIn || !whitelistEmail) {
+        setProtectedVisible(false);
+        return;
+      }
+      statusEl.textContent = '姝ｅ湪鍔犺浇鏉垮潡琛屾儏...';
+      try {
+        const adminQuery = adminMode && adminPassword.value.trim()
+          ? `&adminPassword=${encodeURIComponent(adminPassword.value.trim())}`
+          : '';
+        const resp = await fetch(`/api/linkage?email=${encodeURIComponent(whitelistEmail)}${adminQuery}`);
+        const json = await resp.json();
+        if (!json.success) {
+          statusEl.textContent = json.error || '鍔犺浇澶辫触';
+          statusEl.className = 'status error';
+          await updateHunterEquity();
+          return;
+        }
+        state = json.data || { concepts: [], relations: [], events: [] };
+        state.concepts = Array.isArray(state.concepts) ? state.concepts : [];
+        state.concepts.forEach(ensureTokenItems);
+        state.relations = [];
+        state.events = [];
+        snapshot = json.snapshot || { conceptBoard: [] };
+        canViewAlpha = Boolean(json.canViewAlpha);
+        const stamp = snapshot.generatedAt ? new Date(snapshot.generatedAt).toLocaleString('zh-CN') : '-';
+        statusEl.textContent = `宸叉洿鏂?路 琛屾儏鏃堕棿 ${stamp}`;
+        statusEl.className = 'status ok';
+        renderAll();
+        await updateHunterEquity();
+        await loadHunterSignals();
+      } catch (error) {
+        statusEl.textContent = `缃戠粶寮傚父锛?{error.message}`;
+        statusEl.className = 'status error';
+        await updateHunterEquity();
+        await loadHunterSignals();
+      }
+    }
+
+    async function saveData() {
+      const pwd = adminPassword.value.trim();
+      localStorage.setItem('alphaAdminPassword', pwd);
+      if (!pwd) {
+        statusEl.textContent = '璇峰厛杈撳叆绠＄悊鍛樺瘑鐮併€?;
+        statusEl.className = 'status error';
+        return;
+      }
+
+      const payload = {
+        concepts: state.concepts.map((item, index) => ({
+          id: item.id || uid(),
+          name: String(item.name || '').trim(),
+          status: String(item.status || '瑙傚療涓?).trim() || '瑙傚療涓?,
+          tokenItems: isSpecialAlphaConcept(item) ? normalizeSpecialAlphaTokens(item) : normalizeTokenItems(item),
+          tokens: (isSpecialAlphaConcept(item) ? normalizeSpecialAlphaTokens(item) : normalizeTokenItems(item)).map(token => token.symbol),
+          leaders: [],
+          followers: [],
+          notes: String(item.notes || '').trim(),
+          updatedAt: new Date().toISOString()
+        })).filter(item => item.name || item.tokens.length || item.notes),
+        relations: [],
+        events: []
+      };
+
+      statusEl.textContent = '姝ｅ湪淇濆瓨...';
+      try {
+        const resp = await fetch('/api/admin/linkage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword: pwd, data: payload })
+        });
+        const json = await resp.json();
+        if (!json.success) {
+          statusEl.textContent = json.error || '淇濆瓨澶辫触';
+          statusEl.className = 'status error';
+          return;
+        }
+        state = json.data || payload;
+        adminMode = false;
+        adminPanel.classList.remove('show');
+        statusEl.textContent = '淇濆瓨鎴愬姛锛屽凡閫€鍑虹鐞嗘ā寮忥紝姝ｅ湪鍒锋柊琛屾儏...';
+        statusEl.className = 'status ok';
+        await loadData();
+      } catch (error) {
+        statusEl.textContent = `淇濆瓨寮傚父锛?{error.message}`;
+        statusEl.className = 'status error';
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    loginBtn.addEventListener('click', loginAndLoad);
+    emailInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') loginAndLoad();
+    });
+    document.getElementById('enterAdminBtn').addEventListener('click', () => {
+      const pwd = adminPassword.value.trim();
+      localStorage.setItem('alphaAdminPassword', pwd);
+      if (!pwd) {
+        statusEl.textContent = '璇疯緭鍏ョ鐞嗗憳瀵嗙爜鍚庡啀杩涘叆绠＄悊妯″紡銆?;
+        statusEl.className = 'status error';
+        return;
+      }
+      adminMode = true;
+      adminPanel.classList.remove('show');
+      loadData();
+      statusEl.textContent = '宸茶繘鍏ョ鐞嗘ā寮忥紝鍙洿鎺ュ湪褰撳墠鐪嬫澘缂栬緫鏉垮潡鍜屼唬甯併€?;
+      statusEl.className = 'status ok';
+    });
+    document.getElementById('addSectorBtn').addEventListener('click', () => {
+      state.concepts.push({ id: uid(), name: '', status: '瑙傚療涓?, tokens: [], leaders: [], followers: [], notes: '' });
+      renderEditorV3();
+    });
+    document.getElementById('saveBtn').addEventListener('click', saveData);
+
+    sectorGrid.addEventListener('click', async (event) => {
+      const saveInline = event.target.closest('[data-inline-save]');
+      if (saveInline) {
+        await saveData();
+        return;
+      }
+
+      const addSectorInline = event.target.closest('[data-inline-add-sector]');
+      if (addSectorInline) {
+        const concept = { id: uid(), name: '鏂版澘鍧?, status: '瑙傚療涓?, tokens: [], tokenItems: [], leaders: [], followers: [], notes: '' };
+        state.concepts.push(concept);
+        selectedSectorId = concept.id;
+        renderSectorsV7();
+        return;
+      }
+
+      const deleteInlineRaw = event.target.getAttribute('data-inline-delete-token');
+      if (deleteInlineRaw !== null) {
+        const [conceptRaw, tokenRaw] = deleteInlineRaw.split(':');
+        const conceptIndex = Number(conceptRaw);
+        const tokenIndex = Number(tokenRaw);
+        if (!Number.isInteger(conceptIndex) || !Number.isInteger(tokenIndex) || !state.concepts[conceptIndex]) return;
+        const symbol = ensureTokenItems(state.concepts[conceptIndex])[tokenIndex]?.symbol || 'Token';
+        ensureTokenItems(state.concepts[conceptIndex]).splice(tokenIndex, 1);
+        state.concepts[conceptIndex].tokens = state.concepts[conceptIndex].tokenItems.map(item => item.symbol).filter(Boolean);
+        renderSectorsV7();
+        statusEl.textContent = `${symbol} 宸插垹闄わ紝姝ｅ湪淇濆瓨...`;
+        statusEl.className = 'status ok';
+        await saveData();
+        return;
+      }
+
+      const deleteMissingRaw = event.target.getAttribute('data-inline-delete-missing');
+      if (deleteMissingRaw !== null) {
+        const [conceptRaw, symbolRaw, contractRaw] = deleteMissingRaw.split('|');
+        const conceptIndex = Number(conceptRaw);
+        const symbol = String(symbolRaw || '').trim().toUpperCase();
+        const contractAddress = String(contractRaw || '').trim().toLowerCase();
+        if (!Number.isInteger(conceptIndex) || !state.concepts[conceptIndex] || !symbol) return;
+        const items = ensureTokenItems(state.concepts[conceptIndex]);
+        const before = items.length;
+        const nextItems = items.filter(item => {
+          const itemSymbol = String(item.symbol || '').trim().toUpperCase();
+          const itemContract = String(item.contractAddress || '').trim().toLowerCase();
+          if (itemSymbol !== symbol) return true;
+          if (!contractAddress) return false;
+          return itemContract !== contractAddress;
+        });
+        if (nextItems.length === before) {
+          statusEl.textContent = `${symbol} not found in current list.`;
+          statusEl.className = 'status error';
+          return;
+        }
+        state.concepts[conceptIndex].tokenItems = nextItems;
+        state.concepts[conceptIndex].tokens = nextItems.map(item => item.symbol).filter(Boolean);
+        renderSectorsV7();
+        statusEl.textContent = `${symbol} 宸插垹闄わ紝姝ｅ湪淇濆瓨...`;
+        statusEl.className = 'status ok';
+        await saveData();
+        return;
+      }
+
+      const copyBtn = event.target.closest('[data-copy-contract]');
+      if (copyBtn) {
+        const address = copyBtn.getAttribute('data-copy-contract') || '';
+        try {
+          await navigator.clipboard.writeText(address);
+          copyBtn.textContent = '宸插鍒?;
+          setTimeout(() => { copyBtn.textContent = '澶嶅埗鍚堢害'; }, 1200);
+        } catch (error) {
+          statusEl.textContent = '澶嶅埗澶辫触锛岃鎵嬪姩澶嶅埗鍚堢害鍦板潃銆?;
+          statusEl.className = 'status error';
+        }
+        return;
+      }
+
+      const sectorButton = event.target.closest('[data-sector-select]');
+      if (sectorButton) {
+        selectedSectorId = sectorButton.getAttribute('data-sector-select') || '';
+        renderSectorsV7();
+        return;
+      }
+
+      const toggleRaw = event.target.getAttribute('data-quick-toggle');
+      if (toggleRaw !== null) {
+        const conceptIndex = Number(toggleRaw);
+        const box = sectorGrid.querySelector(`[data-quick-box="${conceptIndex}"]`);
+        if (box) box.classList.toggle('open');
+        return;
+      }
+
+      const raw = event.target.getAttribute('data-quick-add');
+      if (raw === null) return;
+      const conceptIndex = Number(raw);
+      if (!Number.isInteger(conceptIndex) || !state.concepts[conceptIndex]) return;
+
+      const box = sectorGrid.querySelector(`[data-quick-box="${conceptIndex}"]`);
+      if (!box) return;
+      const read = (field) => box.querySelector(`[data-quick-field="${field}"]`)?.value?.trim() || '';
+      const symbol = read('symbol').toUpperCase();
+      let assetType = read('assetType') === 'onchain' ? 'onchain' : 'binance';
+      const chainId = read('chainId');
+      const contractAddress = read('contractAddress');
+      const twitterUrl = /^https?:\/\//i.test(read('twitterUrl')) ? read('twitterUrl') : '';
+      const notes = read('notes');
+
+      if (!symbol) {
+        statusEl.textContent = '璇峰厛濉啓浠ｅ竵 Symbol銆?;
+        statusEl.className = 'status error';
+        return;
+      }
+      let resolved = null;
+      if (!contractAddress) {
+        statusEl.textContent = `${symbol} 姝ｅ湪鑷姩璇嗗埆甯佸畨鐜拌揣 / Alpha / 鍚堢害...`;
+        statusEl.className = 'status';
+        resolved = await resolveTokenSource(symbol);
+        if (resolved?.found) {
+          assetType = 'binance';
+        }
+      }
+      if (assetType === 'onchain' && !contractAddress) {
+        statusEl.textContent = '閾句笂浠ｅ竵闇€瑕佸～鍐欏悎绾﹀湴鍧€銆?;
+        statusEl.className = 'status error';
+        return;
+      }
+
+      const items = ensureTokenItems(state.concepts[conceptIndex]);
+      const exists = items.some(item => item.symbol === symbol && String(item.contractAddress || '').toLowerCase() === contractAddress.toLowerCase());
+      if (exists) {
+        statusEl.textContent = `${symbol} 宸茬粡鍦ㄨ繖涓澘鍧楅噷浜嗐€俙;
+        statusEl.className = 'status error';
+        return;
+      }
+      items.push({ symbol, assetType, chainId, contractAddress, statusTags: [], entryMarketCapMin: null, entryMarketCapMax: null, entryPriceMin: null, entryPriceMax: null, institutionPrice: null, preMarketPrice: null, openPrice: null, twitterUrl, listingNodes: {}, notes });
+      state.concepts[conceptIndex].tokens = items.map(item => item.symbol).filter(Boolean);
+      if (resolved?.found) {
+        statusEl.textContent = `${symbol} 宸茶瘑鍒负 ${resolved.label || 'Binance 鏍囩殑'}锛屼笉闇€瑕佸～鍐欏悎绾︼紝姝ｅ湪淇濆瓨...`;
+        statusEl.className = 'status ok';
+      }
+      renderSectorsV7();
+      if (adminMode) renderEditorV3();
+      await saveData();
+    });
+
+    sectorGrid.addEventListener('input', (event) => {
+      const conceptField = event.target.getAttribute('data-inline-concept-field');
+      if (conceptField) {
+        const conceptIndex = Number(event.target.getAttribute('data-concept-index'));
+        if (!Number.isInteger(conceptIndex) || !state.concepts[conceptIndex]) return;
+        if (conceptField === 'name') state.concepts[conceptIndex].name = event.target.value;
+        if (conceptField === 'notes') state.concepts[conceptIndex].notes = event.target.value;
+        return;
+      }
+
+      const tokenField = event.target.getAttribute('data-inline-token-field');
+      if (!tokenField) return;
+      const conceptIndex = Number(event.target.getAttribute('data-concept-index'));
+      const tokenIndex = Number(event.target.getAttribute('data-token-index'));
+      if (!Number.isInteger(conceptIndex) || !Number.isInteger(tokenIndex) || !state.concepts[conceptIndex]) return;
+      const items = ensureTokenItems(state.concepts[conceptIndex]);
+      if (!items[tokenIndex]) return;
+      if (tokenField === 'symbol') items[tokenIndex].symbol = event.target.value.trim().toUpperCase();
+      if (tokenField === 'assetType') items[tokenIndex].assetType = event.target.value === 'onchain' ? 'onchain' : 'binance';
+      if (tokenField === 'chainId') items[tokenIndex].chainId = event.target.value.trim();
+      if (tokenField === 'contractAddress') items[tokenIndex].contractAddress = event.target.value.trim();
+      if (tokenField === 'twitterUrl') items[tokenIndex].twitterUrl = /^https?:\/\//i.test(event.target.value.trim()) ? event.target.value.trim() : '';
+      if (tokenField === 'statusTags') items[tokenIndex].statusTags = parseStatusTags(event.target.value);
+      if (tokenField === 'notes') items[tokenIndex].notes = event.target.value;
+      state.concepts[conceptIndex].tokens = items.map(item => item.symbol).filter(Boolean);
+    });
+
+    spotlightPanel.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-spotlight-sector]');
+      if (!button) return;
+      selectedSectorId = button.getAttribute('data-spotlight-sector') || '';
+      renderSectorsV7();
+      document.getElementById('sectorGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    specialAlphaPanel.addEventListener('change', (event) => {
+      const field = event.target.getAttribute('data-alpha-field');
+      const symbol = String(event.target.getAttribute('data-alpha-symbol') || '').trim().toUpperCase();
+      const concept = getSpecialAlphaConcept();
+      if (!field || !symbol || !concept) return;
+      const items = ensureTokenItems(concept);
+      const token = items.find(item => item.symbol === symbol);
+      if (!token) return;
+      if (field === 'entryMarketCapMin') token.entryMarketCapMin = Number(event.target.value) || null;
+      if (field === 'entryMarketCapMax') token.entryMarketCapMax = Number(event.target.value) || null;
+      if (field === 'entryPriceMin') token.entryPriceMin = Number(event.target.value) || null;
+      if (field === 'entryPriceMax') token.entryPriceMax = Number(event.target.value) || null;
+      if (field === 'institutionPrice') token.institutionPrice = Number(event.target.value) || null;
+      if (field === 'preMarketPrice') token.preMarketPrice = Number(event.target.value) || null;
+      if (field === 'openPrice') token.openPrice = Number(event.target.value) || null;
+      if (field === 'twitterUrl') token.twitterUrl = /^https?:\/\//i.test(event.target.value.trim()) ? event.target.value.trim() : '';
+      if (field === 'statusTags') token.statusTags = parseStatusTags(event.target.value);
+      if (field === 'notes') token.notes = event.target.value.trim();
+      if (field.startsWith('listingNodes.')) {
+        const key = field.split('.')[1];
+        token.listingNodes = token.listingNodes || {};
+        token.listingNodes[key] = Boolean(event.target.checked);
+        event.target.closest('.node-light')?.classList.toggle('on', Boolean(event.target.checked));
+      }
+      concept.tokens = items.map(item => item.symbol).filter(Boolean);
+    });
+
+    specialAlphaPanel.addEventListener('click', async (event) => {
+      const copyBtn = event.target.closest('[data-copy-contract]');
+      if (copyBtn) {
+        const address = copyBtn.getAttribute('data-copy-contract') || '';
+        try {
+          await navigator.clipboard.writeText(address);
+          copyBtn.textContent = '宸插鍒?;
+          setTimeout(() => { copyBtn.textContent = '澶嶅埗鍚堢害'; }, 1200);
+        } catch (error) {
+          statusEl.textContent = '澶嶅埗澶辫触锛岃鎵嬪姩澶嶅埗鍚堢害鍦板潃銆?;
+          statusEl.className = 'status error';
+        }
+        return;
+      }
+
+      const addRaw = event.target.getAttribute('data-alpha-add-token');
+      if (addRaw !== null) {
+        const conceptIndex = Number(addRaw);
+        const concept = state.concepts[conceptIndex];
+        const box = specialAlphaPanel.querySelector(`[data-alpha-add-box="${conceptIndex}"]`);
+        if (!concept || !box) return;
+        const read = (field) => box.querySelector(`[data-alpha-add-field="${field}"]`)?.value?.trim() || '';
+        const symbol = read('symbol').toUpperCase();
+        const assetType = 'binance';
+        const chainId = '';
+        const contractAddress = '';
+        const twitterUrl = /^https?:\/\//i.test(read('twitterUrl')) ? read('twitterUrl') : '';
+        const notes = read('notes');
+        if (!symbol) {
+          statusEl.textContent = '璇峰厛濉啓 Alpha 浠ｅ竵 Symbol銆?;
+          statusEl.className = 'status error';
+          return;
+        }
+        const resolved = await resolveTokenSource(symbol);
+        /*
+        if (!contractAddress) {
+          statusEl.textContent = `${symbol} 姝ｅ湪鑷姩璇嗗埆甯佸畨鐜拌揣 / Alpha / 鍚堢害...`;
+          statusEl.className = 'status';
+          resolved = await resolveTokenSource(symbol);
+          if (resolved?.found) {
+            assetType = 'binance';
+          }
+        }
+        */
+        if (false && assetType === 'onchain' && !contractAddress) {
+          statusEl.textContent = '閾句笂浠ｅ竵闇€瑕佸～鍐欏悎绾﹀湴鍧€銆?;
+          statusEl.className = 'status error';
+          return;
+        }
+        const items = ensureTokenItems(concept);
+        const exists = items.some(item => item.symbol === symbol && String(item.contractAddress || '').toLowerCase() === contractAddress.toLowerCase());
+        if (exists) {
+          statusEl.textContent = `${symbol} 宸茬粡鍦?Alpha 鐗规畩瑙傚療閲屼簡銆俙;
+          statusEl.className = 'status error';
+          return;
+        }
+        items.push({
+          symbol,
+          assetType,
+          chainId,
+          contractAddress,
+          entryMarketCapMin: null,
+          entryMarketCapMax: null,
+          entryPriceMin: null,
+          entryPriceMax: null,
+          institutionPrice: null,
+          preMarketPrice: null,
+          openPrice: null,
+          twitterUrl,
+          statusTags: [],
+          listingNodes: {},
+          notes
+        });
+        concept.tokens = items.map(item => item.symbol).filter(Boolean);
+        if (resolved?.found) {
+          statusEl.textContent = `${symbol} 宸茶瘑鍒负 ${resolved.label || 'Binance 鏍囩殑'}锛屼笉闇€瑕佸～鍐欏悎绾︼紝姝ｅ湪淇濆瓨...`;
+          statusEl.className = 'status ok';
+        }
+        await saveData();
+        return;
+      }
+
+      const noteSymbol = event.target.getAttribute('data-alpha-edit-note');
+      if (noteSymbol) {
+        const symbol = String(noteSymbol || '').trim().toUpperCase();
+        const concept = getSpecialAlphaConcept();
+        if (!concept) return;
+        const items = ensureTokenItems(concept);
+        const token = items.find(item => item.symbol === symbol);
+        if (!token) return;
+        const next = window.prompt(`缂栬緫 ${symbol} 澶囨敞`, token.notes || '');
+        if (next === null) return;
+        token.notes = next.trim();
+        concept.tokens = items.map(item => item.symbol).filter(Boolean);
+        renderSpecialAlphaPanelV4();
+        return;
+      }
+
+      const deleteAlphaSymbol = event.target.getAttribute('data-alpha-delete-token');
+      if (deleteAlphaSymbol) {
+        const symbol = String(deleteAlphaSymbol || '').trim().toUpperCase();
+        const concept = getSpecialAlphaConcept();
+        if (!concept) return;
+        const items = ensureTokenItems(concept);
+        const nextItems = items.filter(item => item.symbol !== symbol);
+        if (nextItems.length === items.length) return;
+        concept.tokenItems = nextItems;
+        concept.tokens = nextItems.map(item => item.symbol).filter(Boolean);
+        statusEl.textContent = `${symbol} 宸插垹闄わ紝姝ｅ湪淇濆瓨...`;
+        statusEl.className = 'status ok';
+        await saveData();
+        return;
+      }
+
+      const pctKind = event.target.getAttribute('data-alpha-price-pct');
+      if (pctKind) {
+        const symbol = String(event.target.getAttribute('data-alpha-symbol') || '').trim().toUpperCase();
+        const concept = getSpecialAlphaConcept();
+        const board = concept ? getBoardItem(concept) : null;
+        const rows = Array.isArray(board?.allMovers) ? board.allMovers : (Array.isArray(board?.topMovers) ? board.topMovers : []);
+        const row = rows.find(item => String(item.token || '').toUpperCase() === symbol);
+        const pctInput = specialAlphaPanel.querySelector(`input[data-alpha-pct="${pctKind}"][data-alpha-symbol="${symbol}"]`);
+        const nextPrice = priceFromPercent(row?.lastPrice, pctInput?.value);
+        if (!(nextPrice > 0) || !concept) return;
+        const items = ensureTokenItems(concept);
+        const token = items.find(item => item.symbol === symbol);
+        if (!token) return;
+        const field = pctKind === 'min' ? 'entryPriceMin' : 'entryPriceMax';
+        token[field] = nextPrice;
+        const targetInput = specialAlphaPanel.querySelector(`input[data-alpha-field="${field}"][data-alpha-symbol="${symbol}"]`);
+        if (targetInput) targetInput.value = nextPrice;
+        concept.tokens = items.map(item => item.symbol).filter(Boolean);
+        return;
+      }
+      if (event.target.id !== 'saveAlphaInlineBtn') return;
+      const pwd = adminPassword.value.trim();
+      if (!pwd) {
+        statusEl.textContent = '璇峰厛鍦ㄤ笂鏂硅緭鍏ョ鐞嗗憳瀵嗙爜锛屽啀淇濆瓨 Alpha 璁剧疆銆?;
+        statusEl.className = 'status error';
+        return;
+      }
+      await saveData();
+    });
+
+    editorList.addEventListener('input', (event) => {
+      const index = Number(event.target.getAttribute('data-index'));
+      const tokenField = event.target.getAttribute('data-token-field');
+      if (tokenField) {
+        const tokenIndex = Number(event.target.getAttribute('data-token-index'));
+        if (!Number.isInteger(index) || !Number.isInteger(tokenIndex) || !state.concepts[index]) return;
+        const items = ensureTokenItems(state.concepts[index]);
+        if (!items[tokenIndex]) return;
+        if (tokenField === 'symbol') items[tokenIndex].symbol = event.target.value.trim().toUpperCase();
+        if (tokenField === 'assetType') items[tokenIndex].assetType = event.target.value === 'onchain' ? 'onchain' : 'binance';
+        if (tokenField === 'chainId') items[tokenIndex].chainId = event.target.value.trim();
+        if (tokenField === 'contractAddress') items[tokenIndex].contractAddress = event.target.value.trim();
+        if (tokenField === 'entryMarketCapMin') items[tokenIndex].entryMarketCapMin = Number(event.target.value) || null;
+        if (tokenField === 'entryMarketCapMax') items[tokenIndex].entryMarketCapMax = Number(event.target.value) || null;
+        if (tokenField === 'entryPriceMin') items[tokenIndex].entryPriceMin = Number(event.target.value) || null;
+        if (tokenField === 'entryPriceMax') items[tokenIndex].entryPriceMax = Number(event.target.value) || null;
+        if (tokenField && tokenField.startsWith('listingNodes.')) {
+          const key = tokenField.split('.')[1];
+          items[tokenIndex].listingNodes = items[tokenIndex].listingNodes || {};
+          items[tokenIndex].listingNodes[key] = Boolean(event.target.checked);
+        }
+        if (tokenField === 'notes') items[tokenIndex].notes = event.target.value;
+        state.concepts[index].tokens = items.map(item => item.symbol).filter(Boolean);
+        renderSectorsV7();
+        return;
+      }
+      const field = event.target.getAttribute('data-field');
+      if (!Number.isInteger(index) || !field || !state.concepts[index]) return;
+      if (field === 'tokens') {
+        state.concepts[index].tokenItems = parseTokens(event.target.value).map(symbol => ({ symbol, assetType: 'binance', chainId: '', contractAddress: '', notes: '' }));
+        state.concepts[index].tokens = state.concepts[index].tokenItems.map(item => item.symbol);
+      } else state.concepts[index][field] = event.target.value;
+      renderSectorsV7();
+    });
+    editorList.addEventListener('click', (event) => {
+      const addTokenRaw = event.target.getAttribute('data-add-token');
+      if (addTokenRaw !== null) {
+        const conceptIndex = Number(addTokenRaw);
+        if (!Number.isInteger(conceptIndex) || !state.concepts[conceptIndex]) return;
+        ensureTokenItems(state.concepts[conceptIndex]).push({ symbol: '', assetType: 'binance', chainId: '', contractAddress: '', statusTags: [], entryMarketCapMin: null, entryMarketCapMax: null, entryPriceMin: null, entryPriceMax: null, institutionPrice: null, preMarketPrice: null, openPrice: null, twitterUrl: '', listingNodes: {}, notes: '' });
+        renderEditorV3();
+        return;
+      }
+      const deleteTokenRaw = event.target.getAttribute('data-delete-token');
+      if (deleteTokenRaw !== null) {
+        const [conceptRaw, tokenRaw] = deleteTokenRaw.split(':');
+        const conceptIndex = Number(conceptRaw);
+        const tokenIndex = Number(tokenRaw);
+        if (!Number.isInteger(conceptIndex) || !Number.isInteger(tokenIndex) || !state.concepts[conceptIndex]) return;
+        ensureTokenItems(state.concepts[conceptIndex]).splice(tokenIndex, 1);
+        state.concepts[conceptIndex].tokens = state.concepts[conceptIndex].tokenItems.map(item => item.symbol).filter(Boolean);
+        renderEditorV3();
+        renderSectorsV7();
+        return;
+      }
+      const raw = event.target.getAttribute('data-delete');
+      if (raw === null) return;
+      const index = Number(raw);
+      if (!Number.isInteger(index)) return;
+      state.concepts.splice(index, 1);
+      renderEditorV3();
+      renderAll();
+    });
+
+    if (whitelistLoggedIn) {
+      setProtectedVisible(true);
+      loadData();
+    } else {
+      setProtectedVisible(false);
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面已停用</title>
+  <style>
+    :root { --bg:#0b1220; --panel:#131c2f; --line:#2c3c62; --text:#ecf2ff; --muted:#9caed5; --accent:#f0b90b; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #0b1220 0%, #0f1a32 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      padding: 16px;
+    }
+    .panel {
+      width: min(620px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(19, 28, 47, 0.95);
+      padding: 22px;
+      text-align: center;
+    }
+    h1 { margin: 0 0 8px; color: var(--accent); font-size: 26px; }
+    p { margin: 0; color: var(--muted); line-height: 1.8; }
+    a {
+      display: inline-block;
+      margin-top: 16px;
+      color: #9fd0ff;
+      text-decoration: none;
+      border: 1px solid rgba(159,208,255,0.35);
+      border-radius: 10px;
+      padding: 8px 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>该页面已停用</h1>
+    <p>admin-research 功能已下线，不再维护。</p>
+    <a href="/admin-alpha.html">返回主后台</a>
+  </div>
+</body>
+</html>

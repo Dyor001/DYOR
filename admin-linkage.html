@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>概念联动后台</title>
+  <style>
+    :root { --bg:#0a0d12; --panel:#121821; --border:#263242; --text:#edf2f7; --muted:#9fb0c4; --gold:#f0b90b; --ok:#2fbf71; --danger:#ff6b6b; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:22px; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--text); background:linear-gradient(180deg,#0a0d12,#0f1520); }
+    .wrap { max-width:1200px; margin:0 auto; }
+    .panel { background:rgba(18,24,33,.96); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
+    h1,h2 { margin:0 0 10px; }
+    p { margin:0; color:var(--muted); line-height:1.7; }
+    .top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+    input, textarea, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#18212c; color:var(--text); }
+    textarea { min-height:64px; resize:vertical; }
+    .row > .field { flex:1; min-width:140px; }
+    button, .btn-link { border:none; border-radius:10px; padding:10px 12px; font-weight:700; cursor:pointer; }
+    .primary { background:var(--gold); color:#111; }
+    .secondary { background:#223043; color:var(--text); }
+    .danger { background:rgba(255,107,107,.14); color:#ffcbcb; border:1px solid rgba(255,107,107,.3); }
+    .status { min-height:20px; margin-top:8px; color:var(--muted); font-size:13px; }
+    .status.ok { color:var(--ok); }
+    .status.error { color:var(--danger); }
+    .list { display:grid; gap:8px; }
+    .item { border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px; background:rgba(255,255,255,.02); }
+    .item .head { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:8px; }
+    @media (max-width: 900px){ .row { flex-direction:column; align-items:stretch; } .row>.field{min-width:0;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="top">
+        <div>
+          <h1>概念联动后台</h1>
+          <p>你可以维护概念池、联动关系和波段事件。前台页面会自动可视化展示。</p>
+          <p style="margin-top:6px;"><a href="/linkage.html" style="color:#f0b90b; text-decoration:none;">打开联动前台页</a> | <a href="/admin-alpha.html" style="color:#f0b90b; text-decoration:none;">返回主后台</a></p>
+        </div>
+        <div style="min-width:260px; width:320px;">
+          <input id="passwordInput" type="password" placeholder="输入管理密码" />
+        </div>
+      </div>
+      <div class="row">
+        <button id="loadBtn" class="secondary">读取当前配置</button>
+        <button id="saveBtn" class="primary">保存全部改动</button>
+      </div>
+      <div id="globalStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>1) 概念池</h2>
+      <p>示例: 概念=Meme, 代币列表=PEPE,FLOKI,BOME,ACT。领涨池和跟涨池可按你经验手填。</p>
+      <div class="row"><button id="addConceptBtn" class="secondary">新增概念</button></div>
+      <div id="conceptList" class="list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>2) 领涨→跟涨关系</h2>
+      <p>强度 0-100，滞后用分钟填写，例如 30、60、240。</p>
+      <div class="row"><button id="addRelationBtn" class="secondary">新增关系</button></div>
+      <div id="relationList" class="list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>3) 波段事件时间线</h2>
+      <p>每次波段结束后新增一条记录，方便后续复盘。</p>
+      <div class="row"><button id="addEventBtn" class="secondary">新增事件</button></div>
+      <div id="eventList" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+    const passwordInput = document.getElementById('passwordInput');
+    const globalStatus = document.getElementById('globalStatus');
+    const conceptList = document.getElementById('conceptList');
+    const relationList = document.getElementById('relationList');
+    const eventList = document.getElementById('eventList');
+    passwordInput.value = localStorage.getItem('alphaAdminPassword') || '';
+
+    let state = { concepts: [], relations: [], events: [] };
+
+    function setStatus(message, type) {
+      globalStatus.className = 'status' + (type ? ' ' + type : '');
+      globalStatus.textContent = message || '';
+    }
+    function reqPwd() {
+      const pwd = passwordInput.value.trim();
+      localStorage.setItem('alphaAdminPassword', pwd);
+      if (!pwd) {
+        setStatus('请先输入管理密码。', 'error');
+        return '';
+      }
+      return pwd;
+    }
+    function uid(prefix) {
+      return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function addConcept(item) {
+      state.concepts.push(item || {
+        id: uid('concept'),
+        name: '',
+        status: '观察中',
+        tokens: [],
+        leaders: [],
+        followers: [],
+        notes: ''
+      });
+      renderConcepts();
+    }
+    function renderConcepts() {
+      if (!state.concepts.length) {
+        conceptList.innerHTML = '<div class="item">暂无概念，点击“新增概念”。</div>';
+        return;
+      }
+      conceptList.innerHTML = state.concepts.map((item, idx) => `
+        <div class="item" data-idx="${idx}">
+          <div class="head"><strong>概念 ${idx + 1}</strong><button class="danger" data-act="del-concept" data-idx="${idx}">删除</button></div>
+          <div class="row">
+            <div class="field"><input data-k="name" data-idx="${idx}" value="${esc(item.name || '')}" placeholder="概念名称"></div>
+            <div class="field">
+              <select data-k="status" data-idx="${idx}">
+                ${['观察中','启动中','强趋势','退潮'].map(s => `<option value="${s}" ${item.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field"><input data-k="tokens" data-idx="${idx}" value="${esc((item.tokens || []).join(','))}" placeholder="代币列表: PEPE,FLOKI,BOME"></div>
+            <div class="field"><input data-k="leaders" data-idx="${idx}" value="${esc((item.leaders || []).join(','))}" placeholder="领涨池"></div>
+            <div class="field"><input data-k="followers" data-idx="${idx}" value="${esc((item.followers || []).join(','))}" placeholder="跟涨池"></div>
+          </div>
+          <div class="row"><div class="field"><textarea data-k="notes" data-idx="${idx}" placeholder="备注">${esc(item.notes || '')}</textarea></div></div>
+        </div>
+      `).join('');
+    }
+
+    function addRelation(item) {
+      state.relations.push(item || {
+        id: uid('relation'),
+        concept: '',
+        fromSymbol: '',
+        toSymbol: '',
+        strength: 60,
+        lagMinutes: 60,
+        notes: ''
+      });
+      renderRelations();
+    }
+    function renderRelations() {
+      if (!state.relations.length) {
+        relationList.innerHTML = '<div class="item">暂无关系，点击“新增关系”。</div>';
+        return;
+      }
+      relationList.innerHTML = state.relations.map((item, idx) => `
+        <div class="item">
+          <div class="head"><strong>关系 ${idx + 1}</strong><button class="danger" data-act="del-relation" data-idx="${idx}">删除</button></div>
+          <div class="row">
+            <div class="field"><input data-rk="concept" data-idx="${idx}" value="${esc(item.concept || '')}" placeholder="概念"></div>
+            <div class="field"><input data-rk="fromSymbol" data-idx="${idx}" value="${esc(item.fromSymbol || '')}" placeholder="领涨币"></div>
+            <div class="field"><input data-rk="toSymbol" data-idx="${idx}" value="${esc(item.toSymbol || '')}" placeholder="跟涨币"></div>
+          </div>
+          <div class="row">
+            <div class="field"><input type="number" min="0" max="100" data-rk="strength" data-idx="${idx}" value="${Number(item.strength || 0)}" placeholder="联动强度"></div>
+            <div class="field"><input type="number" min="0" data-rk="lagMinutes" data-idx="${idx}" value="${Number(item.lagMinutes || 0)}" placeholder="滞后分钟"></div>
+            <div class="field"><input data-rk="notes" data-idx="${idx}" value="${esc(item.notes || '')}" placeholder="说明"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addEvent(item) {
+      state.events.push(item || {
+        id: uid('event'),
+        date: new Date().toISOString().slice(0, 10),
+        concept: '',
+        leader: '',
+        movers: [],
+        notes: ''
+      });
+      renderEvents();
+    }
+    function renderEvents() {
+      if (!state.events.length) {
+        eventList.innerHTML = '<div class="item">暂无事件，点击“新增事件”。</div>';
+        return;
+      }
+      eventList.innerHTML = state.events.map((item, idx) => `
+        <div class="item">
+          <div class="head"><strong>事件 ${idx + 1}</strong><button class="danger" data-act="del-event" data-idx="${idx}">删除</button></div>
+          <div class="row">
+            <div class="field"><input type="date" data-ek="date" data-idx="${idx}" value="${esc(item.date || '')}"></div>
+            <div class="field"><input data-ek="concept" data-idx="${idx}" value="${esc(item.concept || '')}" placeholder="概念"></div>
+            <div class="field"><input data-ek="leader" data-idx="${idx}" value="${esc(item.leader || '')}" placeholder="领涨币"></div>
+          </div>
+          <div class="row">
+            <div class="field"><input data-ek="movers" data-idx="${idx}" value="${esc((item.movers || []).join(','))}" placeholder="跟涨币列表: token1,token2"></div>
+            <div class="field"><input data-ek="notes" data-idx="${idx}" value="${esc(item.notes || '')}" placeholder="复盘备注"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function bindInputHandlers() {
+      document.body.addEventListener('input', (e) => {
+        const cIdx = e.target.getAttribute('data-idx');
+        if (cIdx === null) return;
+        const idx = Number(cIdx);
+        if (!Number.isInteger(idx)) return;
+
+        const k = e.target.getAttribute('data-k');
+        if (k && state.concepts[idx]) {
+          if (['tokens', 'leaders', 'followers'].includes(k)) {
+            state.concepts[idx][k] = String(e.target.value || '').split(',').map(v => v.trim().toUpperCase()).filter(Boolean);
+          } else {
+            state.concepts[idx][k] = e.target.value;
+          }
+        }
+
+        const rk = e.target.getAttribute('data-rk');
+        if (rk && state.relations[idx]) {
+          if (['strength', 'lagMinutes'].includes(rk)) {
+            state.relations[idx][rk] = Number(e.target.value || 0);
+          } else if (['fromSymbol', 'toSymbol'].includes(rk)) {
+            state.relations[idx][rk] = String(e.target.value || '').toUpperCase();
+          } else {
+            state.relations[idx][rk] = e.target.value;
+          }
+        }
+
+        const ek = e.target.getAttribute('data-ek');
+        if (ek && state.events[idx]) {
+          if (ek === 'movers') {
+            state.events[idx][ek] = String(e.target.value || '').split(',').map(v => v.trim().toUpperCase()).filter(Boolean);
+          } else if (ek === 'leader') {
+            state.events[idx][ek] = String(e.target.value || '').toUpperCase();
+          } else {
+            state.events[idx][ek] = e.target.value;
+          }
+        }
+      });
+
+      document.body.addEventListener('click', (e) => {
+        const act = e.target.getAttribute('data-act');
+        const idx = Number(e.target.getAttribute('data-idx'));
+        if (!act || !Number.isInteger(idx)) return;
+        if (act === 'del-concept') { state.concepts.splice(idx, 1); renderConcepts(); }
+        if (act === 'del-relation') { state.relations.splice(idx, 1); renderRelations(); }
+        if (act === 'del-event') { state.events.splice(idx, 1); renderEvents(); }
+      });
+    }
+
+    async function loadData() {
+      const pwd = reqPwd();
+      if (!pwd) return;
+      setStatus('正在读取配置...', '');
+      try {
+        const resp = await fetch('/api/admin/linkage?adminPassword=' + encodeURIComponent(pwd));
+        const json = await resp.json();
+        if (!json.success) {
+          setStatus(json.error || '读取失败', 'error');
+          return;
+        }
+        state = {
+          concepts: Array.isArray(json.data?.concepts) ? json.data.concepts : [],
+          relations: Array.isArray(json.data?.relations) ? json.data.relations : [],
+          events: Array.isArray(json.data?.events) ? json.data.events : []
+        };
+        renderConcepts();
+        renderRelations();
+        renderEvents();
+        setStatus(`读取成功：概念 ${state.concepts.length}，关系 ${state.relations.length}，事件 ${state.events.length}。`, 'ok');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    }
+
+    async function saveData() {
+      const pwd = reqPwd();
+      if (!pwd) return;
+      setStatus('正在保存...', '');
+      try {
+        const resp = await fetch('/api/admin/linkage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword: pwd, data: state })
+        });
+        const json = await resp.json();
+        if (!json.success) {
+          setStatus(json.error || '保存失败', 'error');
+          return;
+        }
+        setStatus(`保存成功：概念 ${json.counts.concepts}，关系 ${json.counts.relations}，事件 ${json.counts.events}。`, 'ok');
+        await loadData();
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadData);
+    document.getElementById('saveBtn').addEventListener('click', saveData);
+    document.getElementById('addConceptBtn').addEventListener('click', () => addConcept());
+    document.getElementById('addRelationBtn').addEventListener('click', () => addRelation());
+    document.getElementById('addEventBtn').addEventListener('click', () => addEvent());
+    bindInputHandlers();
+    renderConcepts();
+    renderRelations();
+    renderEvents();
+  </script>
+</body>
+</html>

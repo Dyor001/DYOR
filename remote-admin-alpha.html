@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社区资金后台</title>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --panel: #121821;
+      --panel-soft: #18212c;
+      --border: #263242;
+      --text: #edf2f7;
+      --muted: #9fb0c4;
+      --accent: #f0b90b;
+      --danger: #ff6b6b;
+      --ok: #2fbf71;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #0a0d12, #0e141d);
+      color: var(--text);
+      padding: 24px;
+    }
+    .wrap { max-width: 1160px; margin: 0 auto; }
+    .panel {
+      background: rgba(18, 24, 33, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      margin-bottom: 20px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    p { color: var(--muted); }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .status { min-height: 24px; margin-top: 14px; color: var(--muted); }
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr 0.6fr 0.8fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .head {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .row {
+      padding: 12px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .row:first-of-type { border-top: none; }
+    .actions, .whitelist-actions, .fund-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      align-items: center;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--text);
+      font: inherit;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary { background: var(--accent); color: #111; }
+    .secondary { background: #223043; color: var(--text); }
+    .danger {
+      background: rgba(255, 107, 107, 0.12);
+      color: #ffb3b3;
+      border: 1px solid rgba(255, 107, 107, 0.25);
+    }
+    .subtle { color: var(--muted); font-size: 13px; }
+    .email-list { display: grid; gap: 10px; margin-top: 16px; }
+    .email-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .email-item span { word-break: break-all; }
+    .fund-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .fund-card {
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .fund-card .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .fund-card .value { font-size: 28px; font-weight: 700; }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .contact-link-row {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .contact-links-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .qrcode-list-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .qrcode-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .qrcode-preview-mini {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #fff;
+    }
+    .qrcode-empty {
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px dashed rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .grid, .fund-box, .contact-grid { grid-template-columns: 1fr; }
+      .head { display: none; }
+      .row { padding: 16px 0; }
+      .email-item { align-items: stretch; flex-direction: column; }
+      .contact-link-row, .qrcode-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="topbar">
+        <div>
+          <h1>社区资金后台</h1>
+          <p>在同一个页面里维护总份额、ALPHA 持仓、邮箱白名单与联系方式页。</p>
+          <p style="margin-top:8px;color:var(--muted);">项目 / 仓位管理后台（已停用）</p>
+          <p style="margin-top:6px;"><a href="/admin-portfolio.html" style="color:var(--accent); text-decoration:none;">打开仓位管理大模块</a></p>
+          <p style="margin-top:6px;"><a href="/portfolio.html" style="color:var(--accent); text-decoration:none;">打开仓位管理前台展示页</a></p>
+          <p style="margin-top:6px;"><a href="/admin-thinktank.html" style="color:var(--accent); text-decoration:none;">打开智库专栏发布后台</a></p>
+          <p style="margin-top:6px;"><a href="/admin-investors.html" style="color:var(--accent); text-decoration:none;">打开投资人管理档案</a></p>
+          <p style="margin-top:6px;"><a href="/admin-downloads.html" style="color:var(--accent); text-decoration:none;">打开客户端下载后台</a></p>
+          <p style="margin-top:6px;"><a href="/admin-linkage.html" style="color:var(--accent); text-decoration:none;">打开概念联动后台</a></p>
+        </div>
+        <div style="min-width:280px; width:320px; max-width:100%;">
+          <input id="passwordInput" type="password" placeholder="请输入管理密码">
+        </div>
+      </div>
+      <div id="globalStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>总份额</h2>
+      <p class="subtle">有新人进场时，直接手填最新总份额。</p>
+      <div class="fund-box">
+        <div class="fund-card">
+          <div class="label">当前总份额</div>
+          <div class="value" id="currentSharesDisplay">-</div>
+        </div>
+        <div class="fund-card">
+          <div class="label">初始净值</div>
+          <div class="value" id="initialNavDisplay">-</div>
+        </div>
+      </div>
+      <div class="fund-actions">
+        <button class="secondary" id="loadFundBtn">读取当前总份额</button>
+        <div style="flex:1; min-width:240px;">
+          <input id="totalSharesInput" type="number" step="any" placeholder="直接输入最新总份额">
+        </div>
+        <button class="primary" id="saveFundBtn">保存总份额</button>
+      </div>
+      <div id="fundStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>ALPHA 仓位</h2>
+      <p class="subtle">保存后会直接写入 alpha-holdings.json。</p>
+      <div class="actions">
+        <button class="secondary" id="loadAlphaBtn">读取当前仓位</button>
+        <button class="secondary" id="addAlphaBtn">新增一行</button>
+        <button class="primary" id="saveAlphaBtn">保存 ALPHA 修改</button>
+      </div>
+      <div class="grid head" style="margin-top:18px;">
+        <div>币种名称</div>
+        <div>合约地址</div>
+        <div>链 ID</div>
+        <div>数量</div>
+        <div>操作</div>
+      </div>
+      <div id="alphaRows"></div>
+      <div id="alphaStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>邮箱白名单</h2>
+      <p class="subtle">目前仅允许白名单邮箱查看完整持仓。</p>
+      <div class="whitelist-actions">
+        <button class="secondary" id="loadWhitelistBtn">读取当前白名单</button>
+        <div style="flex:1; min-width:240px;">
+          <input id="newEmailInput" type="email" placeholder="输入要新增的白名单邮箱">
+        </div>
+        <button class="primary" id="addEmailBtn">新增邮箱</button>
+      </div>
+      <div id="whitelistStatus" class="status"></div>
+      <div id="emailList" class="email-list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>联动页白名单</h2>
+      <p class="subtle">用于 X 引流收集邮箱。该白名单只能查看概念联动页面，不开放 ALPHA 区、完整持仓和会员核心内容。</p>
+      <div class="whitelist-actions">
+        <button class="secondary" id="loadLinkageWhitelistBtn">读取联动页白名单</button>
+        <div style="flex:1; min-width:240px;">
+          <input id="newLinkageEmailInput" type="email" placeholder="输入要新增的联动页白名单邮箱">
+        </div>
+        <button class="primary" id="addLinkageEmailBtn">新增联动白名单</button>
+      </div>
+      <div id="linkageWhitelistStatus" class="status"></div>
+      <div id="linkageEmailList" class="email-list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>联系方式页面管理</h2>
+      <p class="subtle">维护首页【联系我们】子页内容：标题、副标题、二维码和外链。</p>
+      <div class="actions">
+        <button class="secondary" id="loadContactBtn">读取联系方式配置</button>
+        <button class="primary" id="saveContactBtn">保存联系方式配置</button>
+      </div>
+      <div class="contact-grid">
+        <div>
+          <label class="subtle" for="contactTitleInput">页面标题</label>
+          <input id="contactTitleInput" type="text" placeholder="例如：联系我们">
+        </div>
+        <div>
+          <label class="subtle" for="contactSubtitleInput">页面副标题</label>
+          <input id="contactSubtitleInput" type="text" placeholder="例如：欢迎通过以下方式联系 DYOR 哨兵营">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="topbar" style="align-items:flex-end;">
+          <div>
+            <h3 style="margin-bottom:6px;">二维码管理</h3>
+            <p class="subtle" style="margin:0;">支持多个二维码，每个二维码都可标注用途说明。</p>
+          </div>
+          <button class="secondary" id="addQrcodeBtn" type="button">新增二维码</button>
+        </div>
+        <div class="qrcode-list-wrap">
+          <div id="qrcodeRows"></div>
+        </div>
+      </div>
+
+      <div class="contact-links-wrap">
+        <div class="topbar" style="align-items:flex-end;">
+          <div>
+            <h3 style="margin-bottom:6px;">联系方式链接</h3>
+            <p class="subtle" style="margin:0;">可添加官网、Telegram、X、微信等外部链接。</p>
+          </div>
+          <button class="secondary" id="addContactLinkBtn" type="button">新增链接</button>
+        </div>
+        <div id="contactLinksRows"></div>
+      </div>
+      <div id="contactStatus" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const TXT = {
+      example: '例如：BASED',
+      amount: '数量',
+      del: '删除',
+      needPassword: '请先输入管理密码。',
+      fundLoading: '正在读取总份额...',
+      fundSaveStart: '正在保存总份额...',
+      fundNeedValue: '请输入有效的总份额。',
+      fundSaveOk: '总份额已更新。',
+      alphaLoading: '正在读取当前仓位...',
+      alphaLoadOk: '已读取 ',
+      alphaLoadOkTail: ' 条 ALPHA 仓位。',
+      alphaSaveStart: '正在保存 ALPHA 仓位...',
+      alphaSaveOk: '保存成功，当前共 ',
+      alphaSaveOkTail: ' 条 ALPHA 仓位。',
+      needRow: '至少保留一条有效仓位。',
+      whitelistLoading: '正在读取白名单...',
+      whitelistLoadOk: '已读取 ',
+      whitelistLoadOkTail: ' 个白名单邮箱。',
+      invalidEmail: '请输入有效的邮箱。',
+      addingEmail: '正在新增邮箱...',
+      addEmailOk: '邮箱已新增。',
+      removingEmail: '正在删除邮箱...',
+      removeEmailOk: '邮箱已删除。',
+      emptyWhitelist: '暂无白名单邮箱。',
+      linkageWhitelistLoading: '正在读取联动页白名单...',
+      linkageWhitelistLoadOk: '已读取 ',
+      linkageWhitelistLoadOkTail: ' 个联动页白名单邮箱。',
+      linkageAddEmailOk: '联动页白名单邮箱已新增。',
+      linkageRemoveEmailOk: '联动页白名单邮箱已删除。',
+      emptyLinkageWhitelist: '暂无联动页白名单邮箱。',
+      contactLoading: '正在读取联系方式配置...',
+      contactLoadOk: '联系方式配置已加载。',
+      contactSaveStart: '正在保存联系方式配置...',
+      contactSaveOk: '联系方式配置已保存。',
+      contactNeedLinkLabel: '链接名称不能为空。',
+      contactNeedLinkUrl: '链接地址不能为空。',
+      contactInvalidUrl: '链接地址需以 http:// 或 https:// 开头。',
+      contactEmptyLinks: '暂未添加链接。',
+      contactNeedQrLabel: '二维码标注不能为空。',
+      contactNeedQrImage: '二维码图片不能为空。',
+      contactEmptyQrcodes: '暂未添加二维码。'
+    };
+
+    const passwordInput = document.getElementById('passwordInput');
+    const globalStatus = document.getElementById('globalStatus');
+    const currentSharesDisplay = document.getElementById('currentSharesDisplay');
+    const initialNavDisplay = document.getElementById('initialNavDisplay');
+    const totalSharesInput = document.getElementById('totalSharesInput');
+    const fundStatus = document.getElementById('fundStatus');
+    const alphaRows = document.getElementById('alphaRows');
+    const alphaStatus = document.getElementById('alphaStatus');
+    const whitelistStatus = document.getElementById('whitelistStatus');
+    const emailList = document.getElementById('emailList');
+    const newEmailInput = document.getElementById('newEmailInput');
+    const linkageWhitelistStatus = document.getElementById('linkageWhitelistStatus');
+    const linkageEmailList = document.getElementById('linkageEmailList');
+    const newLinkageEmailInput = document.getElementById('newLinkageEmailInput');
+    const contactTitleInput = document.getElementById('contactTitleInput');
+    const contactSubtitleInput = document.getElementById('contactSubtitleInput');
+    const qrcodeRows = document.getElementById('qrcodeRows');
+    const contactLinksRows = document.getElementById('contactLinksRows');
+    const contactStatus = document.getElementById('contactStatus');
+
+    passwordInput.value = localStorage.getItem('alphaAdminPassword') || '';
+    document.getElementById('loadFundBtn').addEventListener('click', loadFundConfig);
+    document.getElementById('saveFundBtn').addEventListener('click', saveFundConfig);
+    document.getElementById('loadAlphaBtn').addEventListener('click', loadAlphaHoldings);
+    document.getElementById('addAlphaBtn').addEventListener('click', function () { addAlphaRow(); });
+    document.getElementById('saveAlphaBtn').addEventListener('click', saveAlphaHoldings);
+    document.getElementById('loadWhitelistBtn').addEventListener('click', loadWhitelist);
+    document.getElementById('addEmailBtn').addEventListener('click', addWhitelistEmail);
+    document.getElementById('loadLinkageWhitelistBtn').addEventListener('click', loadLinkageWhitelist);
+    document.getElementById('addLinkageEmailBtn').addEventListener('click', addLinkageWhitelistEmail);
+    document.getElementById('loadContactBtn').addEventListener('click', loadContactConfig);
+    document.getElementById('saveContactBtn').addEventListener('click', saveContactConfig);
+    document.getElementById('addContactLinkBtn').addEventListener('click', function () { addContactLinkRow(); });
+    document.getElementById('addQrcodeBtn').addEventListener('click', function () { addQrcodeRow(); });
+
+    function getPassword() {
+      const password = passwordInput.value.trim();
+      localStorage.setItem('alphaAdminPassword', password);
+      return password;
+    }
+
+    function setStatus(el, message, type) {
+      el.className = 'status' + (type ? ' ' + type : '');
+      el.textContent = message;
+    }
+
+    function requirePassword() {
+      const pwd = getPassword();
+      if (!pwd) {
+        setStatus(globalStatus, TXT.needPassword, 'error');
+        return '';
+      }
+      setStatus(globalStatus, '', '');
+      return pwd;
+    }
+
+    function fmt(num) {
+      return Number(num || 0).toLocaleString('en-US', { maximumFractionDigits: 6 });
+    }
+
+    async function loadFundConfig() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(fundStatus, TXT.fundLoading, '');
+      try {
+        const response = await fetch('/api/admin/fund-config?adminPassword=' + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(fundStatus, result.error || 'load failed', 'error');
+          return;
+        }
+        currentSharesDisplay.textContent = fmt(result.config.totalShares);
+        initialNavDisplay.textContent = fmt(result.config.initialNav);
+        totalSharesInput.value = result.config.totalShares;
+        setStatus(fundStatus, '', '');
+      } catch (error) {
+        setStatus(fundStatus, error.message, 'error');
+      }
+    }
+
+    async function saveFundConfig() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      const totalShares = Number(totalSharesInput.value);
+      if (!Number.isFinite(totalShares) || totalShares <= 0) {
+        setStatus(fundStatus, TXT.fundNeedValue, 'error');
+        return;
+      }
+      setStatus(fundStatus, TXT.fundSaveStart, '');
+      try {
+        const response = await fetch('/api/admin/fund-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword, totalShares })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(fundStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        currentSharesDisplay.textContent = fmt(result.config.totalShares);
+        initialNavDisplay.textContent = fmt(result.config.initialNav);
+        totalSharesInput.value = result.config.totalShares;
+        setStatus(fundStatus, TXT.fundSaveOk, 'ok');
+      } catch (error) {
+        setStatus(fundStatus, error.message, 'error');
+      }
+    }
+
+    function createInput(field, placeholder, value, type) {
+      const input = document.createElement('input');
+      input.setAttribute('data-field', field);
+      input.placeholder = placeholder;
+      input.value = value == null ? '' : String(value);
+      if (type) input.type = type;
+      if (field === 'amount') input.step = 'any';
+      return input;
+    }
+
+    function addAlphaRow(item) {
+      const data = item || {};
+      const row = document.createElement('div');
+      row.className = 'grid row';
+      row.appendChild(createInput('symbol', TXT.example, data.symbol || ''));
+      row.appendChild(createInput('contractAddress', '0x...', data.contractAddress || ''));
+      row.appendChild(createInput('chainId', '56', data.chainId || '56'));
+      row.appendChild(createInput('amount', TXT.amount, data.amount == null ? '' : data.amount, 'number'));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'danger';
+      delBtn.type = 'button';
+      delBtn.textContent = TXT.del;
+      delBtn.addEventListener('click', function () { row.remove(); });
+      row.appendChild(delBtn);
+      alphaRows.appendChild(row);
+    }
+
+    function collectAlphaRows() {
+      return Array.from(alphaRows.querySelectorAll('.row'))
+        .map(function (row) {
+          return {
+            symbol: row.querySelector('[data-field="symbol"]').value.trim(),
+            contractAddress: row.querySelector('[data-field="contractAddress"]').value.trim(),
+            chainId: row.querySelector('[data-field="chainId"]').value.trim() || '56',
+            amount: Number(row.querySelector('[data-field="amount"]').value)
+          };
+        })
+        .filter(function (item) { return item.symbol || item.contractAddress || item.amount; });
+    }
+
+    async function loadAlphaHoldings() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(alphaStatus, TXT.alphaLoading, '');
+      try {
+        const response = await fetch('/api/admin/alpha-holdings?adminPassword=' + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(alphaStatus, result.error || 'load failed', 'error');
+          return;
+        }
+        alphaRows.innerHTML = '';
+        result.holdings.forEach(function (item) { addAlphaRow(item); });
+        if (result.holdings.length === 0) addAlphaRow();
+        setStatus(alphaStatus, TXT.alphaLoadOk + result.holdings.length + TXT.alphaLoadOkTail, 'ok');
+      } catch (error) {
+        setStatus(alphaStatus, error.message, 'error');
+      }
+    }
+
+    async function saveAlphaHoldings() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      const holdings = collectAlphaRows();
+      if (holdings.length === 0) {
+        setStatus(alphaStatus, TXT.needRow, 'error');
+        return;
+      }
+      setStatus(alphaStatus, TXT.alphaSaveStart, '');
+      try {
+        const response = await fetch('/api/admin/alpha-holdings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword, holdings })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(alphaStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        setStatus(alphaStatus, TXT.alphaSaveOk + result.count + TXT.alphaSaveOkTail, 'ok');
+        await loadAlphaHoldings();
+      } catch (error) {
+        setStatus(alphaStatus, error.message, 'error');
+      }
+    }
+
+    function renderWhitelist(emails) {
+      emailList.innerHTML = '';
+      if (!emails.length) {
+        const empty = document.createElement('div');
+        empty.className = 'subtle';
+        empty.textContent = TXT.emptyWhitelist;
+        emailList.appendChild(empty);
+        return;
+      }
+      emails.forEach(function (email) {
+        const item = document.createElement('div');
+        item.className = 'email-item';
+        const span = document.createElement('span');
+        span.textContent = email;
+        const btn = document.createElement('button');
+        btn.className = 'danger';
+        btn.type = 'button';
+        btn.textContent = TXT.del;
+        btn.addEventListener('click', function () { removeWhitelistEmail(email); });
+        item.appendChild(span);
+        item.appendChild(btn);
+        emailList.appendChild(item);
+      });
+    }
+
+    async function loadWhitelist() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(whitelistStatus, TXT.whitelistLoading, '');
+      try {
+        const response = await fetch('/api/admin/whitelist?adminKey=' + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(whitelistStatus, result.error || 'load failed', 'error');
+          return;
+        }
+        renderWhitelist(result.emails || []);
+        setStatus(whitelistStatus, TXT.whitelistLoadOk + (result.emails || []).length + TXT.whitelistLoadOkTail, 'ok');
+      } catch (error) {
+        setStatus(whitelistStatus, error.message, 'error');
+      }
+    }
+
+    async function addWhitelistEmail() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      const email = newEmailInput.value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setStatus(whitelistStatus, TXT.invalidEmail, 'error');
+        return;
+      }
+      setStatus(whitelistStatus, TXT.addingEmail, '');
+      try {
+        const response = await fetch('/api/admin/whitelist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminKey: adminPassword, emails: [email] })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(whitelistStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        newEmailInput.value = '';
+        setStatus(whitelistStatus, TXT.addEmailOk, 'ok');
+        await loadWhitelist();
+      } catch (error) {
+        setStatus(whitelistStatus, error.message, 'error');
+      }
+    }
+
+    async function removeWhitelistEmail(email) {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(whitelistStatus, TXT.removingEmail, '');
+      try {
+        const loadResp = await fetch('/api/admin/whitelist?adminKey=' + encodeURIComponent(adminPassword));
+        const loadData = await loadResp.json();
+        if (!loadData.success) {
+          setStatus(whitelistStatus, loadData.error || 'load failed', 'error');
+          return;
+        }
+        const nextEmails = (loadData.emails || []).filter(function (item) { return item !== email; });
+        const response = await fetch('/api/admin/whitelist/replace', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminKey: adminPassword, emails: nextEmails })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(whitelistStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        setStatus(whitelistStatus, TXT.removeEmailOk, 'ok');
+        await loadWhitelist();
+      } catch (error) {
+        setStatus(whitelistStatus, error.message, 'error');
+      }
+    }
+
+    function renderLinkageWhitelist(emails) {
+      linkageEmailList.innerHTML = '';
+      if (!emails.length) {
+        const empty = document.createElement('div');
+        empty.className = 'subtle';
+        empty.textContent = TXT.emptyLinkageWhitelist;
+        linkageEmailList.appendChild(empty);
+        return;
+      }
+      emails.forEach(function (email) {
+        const item = document.createElement('div');
+        item.className = 'email-item';
+        const span = document.createElement('span');
+        span.textContent = email;
+        const btn = document.createElement('button');
+        btn.className = 'danger';
+        btn.type = 'button';
+        btn.textContent = TXT.del;
+        btn.addEventListener('click', function () { removeLinkageWhitelistEmail(email); });
+        item.appendChild(span);
+        item.appendChild(btn);
+        linkageEmailList.appendChild(item);
+      });
+    }
+
+    async function loadLinkageWhitelist() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(linkageWhitelistStatus, TXT.linkageWhitelistLoading, '');
+      try {
+        const response = await fetch('/api/admin/linkage-whitelist?adminKey=' + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(linkageWhitelistStatus, result.error || 'load failed', 'error');
+          return;
+        }
+        renderLinkageWhitelist(result.emails || []);
+        setStatus(linkageWhitelistStatus, TXT.linkageWhitelistLoadOk + (result.emails || []).length + TXT.linkageWhitelistLoadOkTail, 'ok');
+      } catch (error) {
+        setStatus(linkageWhitelistStatus, error.message, 'error');
+      }
+    }
+
+    async function addLinkageWhitelistEmail() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      const email = newLinkageEmailInput.value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setStatus(linkageWhitelistStatus, TXT.invalidEmail, 'error');
+        return;
+      }
+      setStatus(linkageWhitelistStatus, TXT.addingEmail, '');
+      try {
+        const response = await fetch('/api/admin/linkage-whitelist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminKey: adminPassword, emails: [email] })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(linkageWhitelistStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        newLinkageEmailInput.value = '';
+        setStatus(linkageWhitelistStatus, TXT.linkageAddEmailOk, 'ok');
+        await loadLinkageWhitelist();
+      } catch (error) {
+        setStatus(linkageWhitelistStatus, error.message, 'error');
+      }
+    }
+
+    async function removeLinkageWhitelistEmail(email) {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(linkageWhitelistStatus, TXT.removingEmail, '');
+      try {
+        const loadResp = await fetch('/api/admin/linkage-whitelist?adminKey=' + encodeURIComponent(adminPassword));
+        const loadData = await loadResp.json();
+        if (!loadData.success) {
+          setStatus(linkageWhitelistStatus, loadData.error || 'load failed', 'error');
+          return;
+        }
+        const nextEmails = (loadData.emails || []).filter(function (item) { return item !== email; });
+        const response = await fetch('/api/admin/linkage-whitelist/replace', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminKey: adminPassword, emails: nextEmails })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(linkageWhitelistStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        setStatus(linkageWhitelistStatus, TXT.linkageRemoveEmailOk, 'ok');
+        await loadLinkageWhitelist();
+      } catch (error) {
+        setStatus(linkageWhitelistStatus, error.message, 'error');
+      }
+    }
+
+    function showEmptyQrcodeHint() {
+      const hint = document.createElement('div');
+      hint.className = 'qrcode-empty';
+      hint.setAttribute('data-empty-qrcodes', '1');
+      hint.textContent = TXT.contactEmptyQrcodes;
+      qrcodeRows.appendChild(hint);
+    }
+
+    function clearEmptyQrcodeHint() {
+      const hint = qrcodeRows.querySelector('[data-empty-qrcodes="1"]');
+      if (hint) hint.remove();
+    }
+
+    function renderQrcodeThumb(row) {
+      const dataUrl = row.getAttribute('data-qr-dataurl') || '';
+      const previewWrap = row.querySelector('[data-qr-preview]');
+      previewWrap.innerHTML = '';
+      if (!dataUrl) {
+        const empty = document.createElement('span');
+        empty.className = 'subtle';
+        empty.textContent = '未上传';
+        previewWrap.appendChild(empty);
+        return;
+      }
+      const img = document.createElement('img');
+      img.className = 'qrcode-preview-mini';
+      img.src = dataUrl;
+      img.alt = '二维码预览';
+      previewWrap.appendChild(img);
+    }
+
+    function addQrcodeRow(item) {
+      clearEmptyQrcodeHint();
+      const data = item || {};
+      const row = document.createElement('div');
+      row.className = 'qrcode-row';
+      row.setAttribute('data-qr-dataurl', data.dataUrl || '');
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.placeholder = '二维码标注（例如：客服微信）';
+      labelInput.value = data.label || '';
+      labelInput.setAttribute('data-qr-field', 'label');
+
+      const preview = document.createElement('div');
+      preview.setAttribute('data-qr-preview', '1');
+
+      const rightWrap = document.createElement('div');
+      rightWrap.style.display = 'grid';
+      rightWrap.style.gap = '8px';
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.style.maxWidth = '220px';
+      fileInput.addEventListener('change', function (event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+          row.setAttribute('data-qr-dataurl', dataUrl);
+          renderQrcodeThumb(row);
+        };
+        reader.onerror = function () {
+          setStatus(contactStatus, '二维码读取失败，请重试。', 'error');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'danger';
+      delBtn.textContent = TXT.del;
+      delBtn.addEventListener('click', function () {
+        row.remove();
+        if (!qrcodeRows.querySelector('.qrcode-row')) {
+          showEmptyQrcodeHint();
+        }
+      });
+
+      rightWrap.appendChild(fileInput);
+      rightWrap.appendChild(delBtn);
+      row.appendChild(labelInput);
+      row.appendChild(preview);
+      row.appendChild(rightWrap);
+      qrcodeRows.appendChild(row);
+      renderQrcodeThumb(row);
+    }
+
+    function renderQrcodes(items) {
+      qrcodeRows.innerHTML = '';
+      if (!items.length) {
+        showEmptyQrcodeHint();
+        return;
+      }
+      items.forEach(function (item) { addQrcodeRow(item); });
+    }
+
+    function collectQrcodes() {
+      const rows = Array.from(qrcodeRows.querySelectorAll('.qrcode-row'));
+      const list = [];
+      for (const row of rows) {
+        const label = row.querySelector('[data-qr-field="label"]').value.trim();
+        const dataUrl = (row.getAttribute('data-qr-dataurl') || '').trim();
+        if (!label && !dataUrl) continue;
+        if (!label) throw new Error(TXT.contactNeedQrLabel);
+        if (!dataUrl) throw new Error(TXT.contactNeedQrImage);
+        list.push({ label, dataUrl });
+      }
+      return list;
+    }
+
+    function addContactLinkRow(item) {
+      const data = item || {};
+      clearEmptyContactLinksHint();
+      const row = document.createElement('div');
+      row.className = 'contact-link-row';
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.placeholder = '链接名称（例如：Telegram 社群）';
+      labelInput.value = data.label || '';
+      labelInput.setAttribute('data-contact-field', 'label');
+
+      const urlInput = document.createElement('input');
+      urlInput.type = 'url';
+      urlInput.placeholder = '链接地址（https://...）';
+      urlInput.value = data.url || '';
+      urlInput.setAttribute('data-contact-field', 'url');
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'danger';
+      delBtn.textContent = TXT.del;
+      delBtn.addEventListener('click', function () {
+        row.remove();
+        if (!contactLinksRows.children.length) {
+          showEmptyContactLinksHint();
+        }
+      });
+
+      row.appendChild(labelInput);
+      row.appendChild(urlInput);
+      row.appendChild(delBtn);
+      contactLinksRows.appendChild(row);
+    }
+
+    function showEmptyContactLinksHint() {
+      const hint = document.createElement('div');
+      hint.className = 'subtle';
+      hint.setAttribute('data-empty-links', '1');
+      hint.textContent = TXT.contactEmptyLinks;
+      contactLinksRows.appendChild(hint);
+    }
+
+    function clearEmptyContactLinksHint() {
+      const hint = contactLinksRows.querySelector('[data-empty-links="1"]');
+      if (hint) hint.remove();
+    }
+
+    function renderContactLinks(links) {
+      contactLinksRows.innerHTML = '';
+      if (!links.length) {
+        showEmptyContactLinksHint();
+        return;
+      }
+      links.forEach(function (item) { addContactLinkRow(item); });
+    }
+
+    function collectContactLinks() {
+      const rows = Array.from(contactLinksRows.querySelectorAll('.contact-link-row'));
+      const links = [];
+      for (const row of rows) {
+        const label = row.querySelector('[data-contact-field="label"]').value.trim();
+        const url = row.querySelector('[data-contact-field="url"]').value.trim();
+        if (!label && !url) continue;
+        if (!label) throw new Error(TXT.contactNeedLinkLabel);
+        if (!url) throw new Error(TXT.contactNeedLinkUrl);
+        if (!/^https?:\/\//i.test(url)) throw new Error(TXT.contactInvalidUrl);
+        links.push({ label, url });
+      }
+      return links;
+    }
+
+    async function loadContactConfig() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(contactStatus, TXT.contactLoading, '');
+      try {
+        const response = await fetch('/api/admin/contact-config?adminPassword=' + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(contactStatus, result.error || 'load failed', 'error');
+          return;
+        }
+        const config = result.config || {};
+        contactTitleInput.value = config.title || '';
+        contactSubtitleInput.value = config.subtitle || '';
+        const qrcodes = Array.isArray(config.qrcodes)
+          ? config.qrcodes
+          : (config.qrcodeDataUrl ? [{ label: '官方二维码', dataUrl: config.qrcodeDataUrl }] : []);
+        renderQrcodes(qrcodes);
+        renderContactLinks(Array.isArray(config.links) ? config.links : []);
+        setStatus(contactStatus, TXT.contactLoadOk, 'ok');
+      } catch (error) {
+        setStatus(contactStatus, error.message, 'error');
+      }
+    }
+
+    async function saveContactConfig() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(contactStatus, TXT.contactSaveStart, '');
+      try {
+        const qrcodes = collectQrcodes();
+        const links = collectContactLinks();
+        const config = {
+          title: contactTitleInput.value.trim(),
+          subtitle: contactSubtitleInput.value.trim(),
+          qrcodes,
+          qrcodeDataUrl: qrcodes[0] ? qrcodes[0].dataUrl : '',
+          links
+        };
+        const response = await fetch('/api/admin/contact-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword, config })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(contactStatus, result.error || 'save failed', 'error');
+          return;
+        }
+        setStatus(contactStatus, TXT.contactSaveOk, 'ok');
+      } catch (error) {
+        setStatus(contactStatus, error.message, 'error');
+      }
+    }
+
+    addAlphaRow();
+    renderQrcodes([]);
+    renderContactLinks([]);
+    loadFundConfig();
+  </script>
+</body>
+</html>
