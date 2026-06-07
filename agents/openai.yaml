@@ -1,0 +1,8 @@
+interface:
+  display_name: "AI Bottleneck Map"
+  short_description: "Maps AI themes into bottleneck layers, node cards, and re-rating paths"
+  default_prompt: "Use ai-bottleneck-map to turn this theme into bottleneck layers, map listed companies to those layers, score evidence and timing, and state the main re-rating triggers and kill conditions."
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools: []
