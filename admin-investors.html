@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投资人管理档案</title>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --panel: #121821;
+      --panel-soft: #18212c;
+      --border: #263242;
+      --text: #edf2f7;
+      --muted: #9fb0c4;
+      --accent: #f0b90b;
+      --danger: #ff6b6b;
+      --ok: #2fbf71;
+      --cyan: #6bc8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(240, 185, 11, 0.12), transparent 30%),
+        linear-gradient(180deg, #0a0d12, #0e141d);
+      color: var(--text);
+      padding: 24px;
+    }
+    .wrap { max-width: 1500px; margin: 0 auto; }
+    .panel {
+      background: rgba(18, 24, 33, .96);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+      margin-bottom: 20px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    p { color: var(--muted); margin: 0; }
+    .topbar, .actions, .links {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .actions { justify-content: flex-start; margin-top: 16px; }
+    .status { min-height: 24px; margin-top: 14px; color: var(--muted); }
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--text);
+      font: inherit;
+    }
+    button, .link-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .primary { background: var(--accent); color: #111; }
+    .secondary, .link-btn { background: #223043; color: var(--text); }
+    .danger {
+      background: rgba(255, 107, 107, .12);
+      color: #ffb3b3;
+      border: 1px solid rgba(255, 107, 107, .25);
+    }
+    .subtle { font-size: 13px; color: var(--muted); }
+    .kpi-row {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .kpi {
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .03);
+      padding: 12px;
+    }
+    .kpi .k { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .kpi .v { color: var(--text); font-size: 20px; font-weight: 700; }
+    .kpi .v.ok { color: var(--ok); }
+    .kpi .v.cyan { color: var(--cyan); }
+
+    .battle-layout {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 520px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .battle-board {
+      position: relative;
+      height: 820px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)),
+        linear-gradient(180deg, rgba(240,185,11,.07), rgba(107,200,255,.03));
+      overflow: hidden;
+    }
+    .battle-axis-line {
+      position: absolute;
+      left: 64px;
+      right: 20px;
+      height: 1px;
+      background: rgba(255, 255, 255, .14);
+    }
+    .battle-axis-label {
+      position: absolute;
+      left: 14px;
+      transform: translateY(-50%);
+      color: #d8e2ef;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: .06em;
+    }
+    .battle-axis-label.m2 { color: #f5cc57; }
+    .battle-axis-label.m4 { color: #6bc8ff; }
+    .investor-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 3px rgba(0,0,0,.25);
+    }
+    .investor-dot.pre2 { background: #f0b90b; }
+    .investor-dot.reach2 { background: #2fbf71; }
+    .investor-dot.reach4 { background: #6bc8ff; }
+    .investor-tag {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, .46);
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 8px;
+      padding: 4px 7px;
+      font-size: 12px;
+      white-space: nowrap;
+      color: #eef4ff;
+    }
+    .legend {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #d7e3f3;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot.pre2 { background: #f0b90b; }
+    .dot.reach2 { background: #2fbf71; }
+    .dot.reach4 { background: #6bc8ff; }
+
+    .takeout-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .takeout-card {
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,.03);
+    }
+    .takeout-card h4 {
+      margin: 0 0 8px;
+      color: #f4dfaa;
+      font-size: 14px;
+      letter-spacing: .04em;
+    }
+    .takeout-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: #d6deea;
+      margin-bottom: 6px;
+    }
+    .takeout-line strong { color: #fff; }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 1550px; }
+    th, td { border-bottom: 1px solid rgba(255,255,255,.06); padding: 10px; vertical-align: middle; }
+    th {
+      background: rgba(255,255,255,.03);
+      color: #f3df9b;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      position: sticky;
+      top: 0;
+    }
+    td.readonly { color: #c7d2df; background: rgba(255,255,255,.02); }
+    td input { min-width: 120px; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    @media (max-width: 1280px) {
+      .battle-layout { grid-template-columns: 1fr; }
+      .battle-board { height: 620px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      body { padding: 16px; }
+      .takeout-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="topbar">
+        <div>
+          <h1>投资人管理档案</h1>
+          <p>维护投资人基础信息，并自动计算当前天数、对应利润比、当前资产、利润与投资人分配。</p>
+        </div>
+        <div style="min-width:280px;width:320px;max-width:100%;">
+          <input id="passwordInput" type="password" placeholder="请输入管理密码">
+        </div>
+      </div>
+      <div class="links" style="margin-top:12px;">
+        <a class="link-btn" href="/admin-alpha.html">返回主后台</a>
+        <a class="link-btn" href="/investor.html" target="_blank" rel="noopener noreferrer">打开投资人查询页</a>
+      </div>
+      <div id="globalStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>战壕推进总览（1x - 4x）</h2>
+      <p class="subtle">纵向看板用于观察全部投资人的推进位置，2x/4x 为关键关卡。每个点代表一位投资人的当前“实时份额单价 ÷ 买入单价”倍率。</p>
+      <div class="kpi-row" id="battleKpis"></div>
+
+      <div class="battle-layout">
+        <div>
+          <div id="battleBoard" class="battle-board"></div>
+          <div class="legend">
+            <span><i class="dot pre2"></i> 1x - 2x 区间</span>
+            <span><i class="dot reach2"></i> 已触达 2x</span>
+            <span><i class="dot reach4"></i> 已触达 4x</span>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin-bottom:10px;">止盈触发时：你可提取的收益（管理人视角）</h3>
+          <p class="subtle">计算口径：管理人收益 = 总利润 × (1 - 投资人分成比)。本看板预估按最低五五分成执行，下方“资产占比”表示管理人收益占该笔结算资产的比例。</p>
+          <div class="takeout-grid" id="takeoutGrid"></div>
+        </div>
+      </div>
+      <div id="visualStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>投资人档案表</h2>
+      <p class="subtle">收益分成按规则自动计算：<strong>50% + 20% × (持有天数 / 365)^1.5</strong>，未满30天按0处理。</p>
+      <div class="actions">
+        <button class="secondary" id="loadBtn">读取当前档案</button>
+        <button class="secondary" id="addBtn">新增一行</button>
+        <button class="primary" id="saveBtn">保存档案</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>投资人</th>
+              <th>入金额度(U)</th>
+              <th>加入时间</th>
+              <th>周期</th>
+              <th>买入净值</th>
+              <th>份额</th>
+              <th>查询码</th>
+              <th>当前天数</th>
+              <th>对应利润比</th>
+              <th>当前净值</th>
+              <th>当前资产</th>
+              <th>利润</th>
+              <th>投资人分配</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const passwordInput = document.getElementById("passwordInput");
+    const globalStatus = document.getElementById("globalStatus");
+    const visualStatus = document.getElementById("visualStatus");
+    const rowsEl = document.getElementById("rows");
+    const statusEl = document.getElementById("status");
+    const battleBoardEl = document.getElementById("battleBoard");
+    const battleKpisEl = document.getElementById("battleKpis");
+    const takeoutGridEl = document.getElementById("takeoutGrid");
+
+    let cachedRows = [];
+
+    passwordInput.value = localStorage.getItem("alphaAdminPassword") || "";
+    document.getElementById("loadBtn").addEventListener("click", loadRows);
+    document.getElementById("addBtn").addEventListener("click", () => addRow());
+    document.getElementById("saveBtn").addEventListener("click", saveRows);
+
+    function getPassword() {
+      const password = passwordInput.value.trim();
+      localStorage.setItem("alphaAdminPassword", password);
+      return password;
+    }
+
+    function setStatus(el, message, type) {
+      el.className = "status" + (type ? " " + type : "");
+      el.textContent = message;
+    }
+
+    function requirePassword() {
+      const pwd = getPassword();
+      if (!pwd) {
+        setStatus(globalStatus, "请先输入管理密码。", "error");
+        return "";
+      }
+      setStatus(globalStatus, "", "");
+      return pwd;
+    }
+
+    function fmt(value, d = 4) {
+      if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "-";
+      return Number(value).toLocaleString("en-US", { maximumFractionDigits: d });
+    }
+
+    function createInput(field, value, type) {
+      const input = document.createElement("input");
+      input.setAttribute("data-field", field);
+      input.value = value == null ? "" : String(value);
+      if (type) input.type = type;
+      if (field === "amount" || field === "buyNav" || field === "shares") input.step = "any";
+      if (field === "queryCode") input.maxLength = 4;
+      return input;
+    }
+
+    function readonlyCell(value, cls) {
+      const td = document.createElement("td");
+      td.className = "readonly " + (cls || "");
+      td.textContent = value;
+      return td;
+    }
+
+    function wrapInputCell(input) {
+      const td = document.createElement("td");
+      td.appendChild(input);
+      return td;
+    }
+
+    function addRow(item) {
+      const data = item || {};
+      const tr = document.createElement("tr");
+      tr.appendChild(wrapInputCell(createInput("name", data.name || "")));
+      tr.appendChild(wrapInputCell(createInput("amount", data.amount == null ? "" : data.amount, "number")));
+      tr.appendChild(wrapInputCell(createInput("joinedAt", data.joinedAt || "")));
+      tr.appendChild(wrapInputCell(createInput("lockPeriod", data.lockPeriod || "1Y")));
+      tr.appendChild(wrapInputCell(createInput("buyNav", data.buyNav == null ? "" : data.buyNav, "number")));
+      tr.appendChild(wrapInputCell(createInput("shares", data.shares == null ? "" : data.shares, "number")));
+      tr.appendChild(wrapInputCell(createInput("queryCode", data.queryCode || "")));
+      tr.appendChild(readonlyCell(fmt(data.currentDays, 0), "center"));
+      const ratioText = data.profitShareRatio == null ? "-" : (fmt(data.profitShareRatio, 2) + "%");
+      tr.appendChild(readonlyCell(ratioText, "center"));
+      tr.appendChild(readonlyCell(data.currentNav == null ? "-" : fmt(data.currentNav, 6), "right"));
+      tr.appendChild(readonlyCell(data.currentAsset == null ? "-" : ("$" + fmt(data.currentAsset, 4)), "right"));
+      tr.appendChild(readonlyCell(data.profit == null ? "-" : ("$" + fmt(data.profit, 4)), "right"));
+      tr.appendChild(readonlyCell(data.investorShare == null ? "-" : ("$" + fmt(data.investorShare, 4)), "right"));
+      const op = document.createElement("td");
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "danger";
+      del.textContent = "删除";
+      del.addEventListener("click", () => tr.remove());
+      op.appendChild(del);
+      tr.appendChild(op);
+      rowsEl.appendChild(tr);
+    }
+
+    function collectRows() {
+      return Array.from(rowsEl.querySelectorAll("tr")).map(tr => ({
+        name: tr.querySelector('[data-field="name"]').value.trim(),
+        amount: Number(tr.querySelector('[data-field="amount"]').value),
+        joinedAt: tr.querySelector('[data-field="joinedAt"]').value.trim(),
+        lockPeriod: tr.querySelector('[data-field="lockPeriod"]').value.trim(),
+        buyNav: Number(tr.querySelector('[data-field="buyNav"]').value),
+        shares: Number(tr.querySelector('[data-field="shares"]').value),
+        queryCode: tr.querySelector('[data-field="queryCode"]').value.trim()
+      })).filter(item => item.name || item.amount || item.shares);
+    }
+
+    function stageClass(multiple) {
+      if (multiple >= 4) return "reach4";
+      if (multiple >= 2) return "reach2";
+      return "pre2";
+    }
+
+    function effectiveInvestorRatio(investorRatioPercent) {
+      // 预估止盈统一采用“最低五五分成”口径，避免管理人占比高于预期。
+      return Math.max(50, Math.min(100, Number(investorRatioPercent || 0)));
+    }
+
+    function managerPctOfSettlement(step, investorRatioPercent) {
+      const r = effectiveInvestorRatio(investorRatioPercent) / 100;
+      return ((step - 1) * (1 - r) / step) * 100;
+    }
+
+    function managerAmountAtStep(amount, step, investorRatioPercent) {
+      const r = effectiveInvestorRatio(investorRatioPercent) / 100;
+      return Number(amount || 0) * (step - 1) * (1 - r);
+    }
+
+    function renderVisuals(rows) {
+      const valid = (rows || []).filter(r => Number(r.buyNav) > 0 && Number(r.currentNav) > 0 && Number(r.amount) >= 0);
+      if (!valid.length) {
+        battleBoardEl.innerHTML = "";
+        battleKpisEl.innerHTML = "";
+        takeoutGridEl.innerHTML = "<div class='takeout-card'><h4>暂无数据</h4><div class='takeout-line'><span>请先读取并保存投资人档案。</span></div></div>";
+        setStatus(visualStatus, "暂无可视化数据。", "");
+        return;
+      }
+
+      const currentNav = Number(valid[0].currentNav || 0);
+      const enriched = valid.map((r, idx) => {
+        const multipleRaw = Number(r.buyNav) > 0 ? Number(r.currentNav) / Number(r.buyNav) : 0;
+        const multiple = Number.isFinite(multipleRaw) ? multipleRaw : 0;
+        return { ...r, idx, multiple, clamped: Math.max(1, Math.min(4, multiple)) };
+      });
+
+      const pre2 = enriched.filter(r => r.multiple < 2).length;
+      const reach2 = enriched.filter(r => r.multiple >= 2 && r.multiple < 4).length;
+      const reach4 = enriched.filter(r => r.multiple >= 4).length;
+      const avgMultiple = enriched.reduce((s, r) => s + r.multiple, 0) / enriched.length;
+
+      battleKpisEl.innerHTML = `
+        <div class="kpi"><div class="k">实时份额单价</div><div class="v cyan">${fmt(currentNav, 6)} U</div></div>
+        <div class="kpi"><div class="k">投资人数</div><div class="v">${enriched.length}</div></div>
+        <div class="kpi"><div class="k">平均推进倍率</div><div class="v">${fmt(avgMultiple, 3)}x</div></div>
+        <div class="kpi"><div class="k">已到 2x</div><div class="v ok">${reach2 + reach4}</div></div>
+        <div class="kpi"><div class="k">已到 4x</div><div class="v cyan">${reach4}</div></div>
+      `;
+
+      const H = 820;
+      const topPad = 24;
+      const bottomPad = 24;
+      const workH = H - topPad - bottomPad;
+      const yOf = (m) => topPad + ((4 - m) / 3) * workH;
+
+      const axisSteps = [1, 2, 3, 4];
+      let axisHtml = "";
+      axisSteps.forEach(step => {
+        const y = yOf(step);
+        axisHtml += `<div class="battle-axis-line" style="top:${y}px;"></div>`;
+        axisHtml += `<div class="battle-axis-label ${step === 2 ? "m2" : (step === 4 ? "m4" : "")}" style="top:${y}px;">${step.toFixed(1)}x</div>`;
+      });
+
+      const widthSlots = Math.max(1, enriched.length - 1);
+      let pointsHtml = "";
+      enriched.forEach((row, i) => {
+        const x = 90 + (i / widthSlots) * (500 - 130);
+        const y = yOf(row.clamped);
+        const cls = stageClass(row.multiple);
+        const label = `${row.name || "未命名"} · ${fmt(row.multiple, 3)}x`;
+        pointsHtml += `<div class="investor-dot ${cls}" style="left:${x}px; top:${y}px;"></div>`;
+        pointsHtml += `<div class="investor-tag" style="left:${x}px; top:${y - 18}px;">${label}</div>`;
+      });
+
+      battleBoardEl.innerHTML = axisHtml + pointsHtml;
+
+      let totalManager2 = 0;
+      let totalManager4 = 0;
+      let totalSettle2 = 0;
+      let totalSettle4 = 0;
+
+      const cardsHtml = enriched.map(row => {
+        const ratio = Number(row.profitShareRatio || 0);
+        const m2Pct = managerPctOfSettlement(2, ratio);
+        const m4Pct = managerPctOfSettlement(4, ratio);
+        const m2Amt = managerAmountAtStep(row.amount, 2, ratio);
+        const m4Amt = managerAmountAtStep(row.amount, 4, ratio);
+        const settle2 = Number(row.amount || 0) * 2;
+        const settle4 = Number(row.amount || 0) * 4;
+
+        totalManager2 += m2Amt;
+        totalManager4 += m4Amt;
+        totalSettle2 += settle2;
+        totalSettle4 += settle4;
+
+        return `
+          <div class="takeout-card">
+            <h4>${row.name || "未命名"}（查询码 ${row.queryCode || "-" }）</h4>
+            <div class="takeout-line"><span>当前倍率</span><strong>${fmt(row.multiple, 3)}x</strong></div>
+            <div class="takeout-line"><span>2x 触发可提收益</span><strong>$${fmt(m2Amt, 4)}（资产占比 ${fmt(m2Pct, 2)}%）</strong></div>
+            <div class="takeout-line"><span>4x 触发可提收益</span><strong>$${fmt(m4Amt, 4)}（资产占比 ${fmt(m4Pct, 2)}%）</strong></div>
+          </div>
+        `;
+      }).join("");
+
+      const totalPct2 = totalSettle2 > 0 ? (totalManager2 / totalSettle2) * 100 : 0;
+      const totalPct4 = totalSettle4 > 0 ? (totalManager4 / totalSettle4) * 100 : 0;
+
+      takeoutGridEl.innerHTML = `
+        <div class="takeout-card" style="grid-column:1 / -1; border-color:rgba(240,185,11,.35);">
+          <h4>全体汇总（按当前对应利润比分布估算）</h4>
+          <div class="takeout-line"><span>全体 2x 触发：你可提总收益</span><strong>$${fmt(totalManager2, 4)}（资产占比 ${fmt(totalPct2, 2)}%）</strong></div>
+          <div class="takeout-line"><span>全体 4x 触发：你可提总收益</span><strong>$${fmt(totalManager4, 4)}（资产占比 ${fmt(totalPct4, 2)}%）</strong></div>
+        </div>
+        ${cardsHtml}
+      `;
+
+      setStatus(
+        visualStatus,
+        `可视化已更新：未到2x ${pre2} 人，已到2x ${reach2 + reach4} 人，已到4x ${reach4} 人。`,
+        "ok"
+      );
+    }
+
+    async function loadRows() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      setStatus(statusEl, "正在读取投资人档案...", "");
+      try {
+        const response = await fetch("/api/admin/investors?adminPassword=" + encodeURIComponent(adminPassword));
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(statusEl, result.error || "load failed", "error");
+          return;
+        }
+        cachedRows = result.rows || [];
+        rowsEl.innerHTML = "";
+        cachedRows.forEach(item => addRow(item));
+        if (!cachedRows.length) addRow();
+        renderVisuals(cachedRows);
+        setStatus(statusEl, "已读取 " + cachedRows.length + " 位投资人。", "ok");
+      } catch (error) {
+        setStatus(statusEl, error.message, "error");
+      }
+    }
+
+    async function saveRows() {
+      const adminPassword = requirePassword();
+      if (!adminPassword) return;
+      const investors = collectRows();
+      if (investors.length === 0) {
+        setStatus(statusEl, "至少保留一位投资人。", "error");
+        return;
+      }
+      if (investors.some(item => !item.name)) {
+        setStatus(statusEl, "每位投资人都需要填写姓名。", "error");
+        return;
+      }
+      setStatus(statusEl, "正在保存投资人档案...", "");
+      try {
+        const response = await fetch("/api/admin/investors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ adminPassword, investors })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          setStatus(statusEl, result.error || "save failed", "error");
+          return;
+        }
+        setStatus(statusEl, "保存成功，当前 " + (result.count || 0) + " 位投资人。", "ok");
+        await loadRows();
+      } catch (error) {
+        setStatus(statusEl, error.message, "error");
+      }
+    }
+
+    addRow();
+    loadRows();
+  </script>
+</body>
+</html>

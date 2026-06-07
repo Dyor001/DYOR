@@ -1,0 +1,64 @@
+{
+  "concepts": [
+    {
+      "id": "concept_meme",
+      "name": "MEME",
+      "status": "观察中",
+      "tokens": [
+        "PEPE",
+        "FLOKI",
+        "BONK",
+        "WIF",
+        "BOME"
+      ],
+      "leaders": [
+        "PEPE",
+        "WIF"
+      ],
+      "followers": [
+        "FLOKI",
+        "BONK",
+        "BOME"
+      ],
+      "notes": "首版示例：可按你每次波段继续迭代。",
+      "updatedAt": "2026-04-17T00:00:00.000Z"
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel_meme_1",
+      "concept": "MEME",
+      "fromSymbol": "PEPE",
+      "toSymbol": "FLOKI",
+      "strength": 72,
+      "lagMinutes": 60,
+      "notes": "示例关系，可按实盘更新",
+      "updatedAt": "2026-04-17T00:00:00.000Z"
+    },
+    {
+      "id": "rel_meme_2",
+      "concept": "MEME",
+      "fromSymbol": "WIF",
+      "toSymbol": "BONK",
+      "strength": 66,
+      "lagMinutes": 45,
+      "notes": "示例关系，可按实盘更新",
+      "updatedAt": "2026-04-17T00:00:00.000Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "event_sample_1",
+      "date": "2026-04-17",
+      "concept": "MEME",
+      "leader": "PEPE",
+      "movers": [
+        "FLOKI",
+        "BONK"
+      ],
+      "notes": "示例事件：用于展示时间线结构。",
+      "updatedAt": "2026-04-17T00:00:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-04-17T00:00:00.000Z"
+}

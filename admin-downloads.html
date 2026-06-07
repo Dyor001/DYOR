@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>下载中心后台</title>
+  <style>
+    :root { --bg:#0a0d12; --panel:#121821; --border:#263242; --text:#edf2f7; --muted:#9fb0c4; --accent:#f0b90b; --ok:#2fbf71; --danger:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:24px; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--text); background:linear-gradient(180deg,#0a0d12,#0e141d); }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .panel { background:rgba(18,24,33,.96); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:18px; }
+    h1,h2 { margin:0 0 12px; }
+    p { color:var(--muted); margin:0 0 10px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .row > * { flex:1; min-width:180px; }
+    input, textarea { width:100%; border-radius:10px; border:1px solid var(--border); background:#18212c; color:var(--text); padding:11px 12px; }
+    textarea { min-height:80px; resize:vertical; }
+    button { border:none; border-radius:10px; padding:11px 14px; font-weight:700; cursor:pointer; }
+    .primary { background:var(--accent); color:#111; }
+    .secondary { background:#223043; color:var(--text); }
+    .danger { background: rgba(255,107,107,.14); color:#ffc9c9; border:1px solid rgba(255,107,107,.3); }
+    .status { min-height:22px; margin-top:10px; color:var(--muted); }
+    .ok { color:var(--ok); }
+    .error { color:var(--danger); }
+    .card-list { display:grid; gap:10px; margin-top:14px; }
+    .card { border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; background:rgba(255,255,255,.02); }
+    .card-head { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .meta { color:var(--muted); font-size:13px; margin-top:6px; }
+    .actions { margin-top:10px; display:flex; gap:8px; }
+    @media (max-width: 800px){ .row { flex-direction:column; align-items:stretch; } .row>* { min-width:0; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>下载中心后台</h1>
+      <p>你上传文件后，会自动出现在下载页。用户只能下载，不能上传。</p>
+      <p><a href="/admin-alpha.html" style="color:#f0b90b; text-decoration:none;">返回主后台</a> | <a href="/downloads.html" style="color:#f0b90b; text-decoration:none;">打开下载页</a></p>
+      <div class="row">
+        <div style="flex:2;"><input id="adminPassword" type="password" placeholder="输入管理密码"></div>
+        <div style="flex:1;"><button class="secondary" id="loadBtn">读取当前应用列表</button></div>
+      </div>
+      <div id="globalStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>上传新应用</h2>
+      <div class="row">
+        <div><input id="appName" placeholder="应用名称，例如：DYOR桌面端"></div>
+        <div><input id="appVersion" placeholder="版本，例如：v1.0.2"></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div style="flex:2;"><input id="appFile" type="file"></div>
+        <div style="flex:1;"><button class="primary" id="uploadBtn">上传并发布</button></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div style="flex:1;"><textarea id="appDesc" placeholder="简短说明（可选）"></textarea></div>
+      </div>
+      <div class="status">单文件上限 100MB，适合放几个小客户端。</div>
+      <div id="uploadStatus" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>已发布应用</h2>
+      <div id="listStatus" class="status"></div>
+      <div id="cardList" class="card-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const adminPassword = document.getElementById('adminPassword');
+    const globalStatus = document.getElementById('globalStatus');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const listStatus = document.getElementById('listStatus');
+    const cardList = document.getElementById('cardList');
+    adminPassword.value = localStorage.getItem('alphaAdminPassword') || '';
+
+    function setStatus(el, message, type) {
+      el.className = 'status' + (type ? ' ' + type : '');
+      el.textContent = message || '';
+    }
+    function requirePassword() {
+      const pwd = adminPassword.value.trim();
+      localStorage.setItem('alphaAdminPassword', pwd);
+      if (!pwd) {
+        setStatus(globalStatus, '请先输入管理密码。', 'error');
+        return '';
+      }
+      setStatus(globalStatus, '', '');
+      return pwd;
+    }
+    function formatSize(size) {
+      const n = Number(size || 0);
+      if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(2) + ' MB';
+      if (n >= 1024) return (n / 1024).toFixed(2) + ' KB';
+      return n + ' B';
+    }
+    function toDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderList(items) {
+      cardList.innerHTML = '';
+      if (!items.length) {
+        cardList.innerHTML = '<div class="meta">暂无已发布应用。</div>';
+        return;
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const created = item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : '-';
+        const desc = item.description || '无说明';
+        card.innerHTML = `
+          <div class="card-head">
+            <strong>${item.name || '-'}</strong>
+            <span>${item.version || '-'}</span>
+          </div>
+          <div class="meta">文件：${item.fileName || '-'} | 大小：${formatSize(item.fileSize)} | 发布时间：${created}</div>
+          <div class="meta">${desc}</div>
+          <div class="actions">
+            <a class="secondary" href="${item.downloadUrl}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding:11px 14px; border-radius:10px;">下载测试</a>
+            <button class="danger" type="button" data-id="${item.id}">删除</button>
+          </div>
+        `;
+        card.querySelector('button[data-id]').addEventListener('click', async () => {
+          const pwd = requirePassword();
+          if (!pwd) return;
+          setStatus(listStatus, '正在删除...', '');
+          try {
+            const resp = await fetch('/api/admin/downloads/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ adminPassword: pwd, id: item.id })
+            });
+            const data = await resp.json();
+            if (!data.success) {
+              setStatus(listStatus, data.error || '删除失败', 'error');
+              return;
+            }
+            setStatus(listStatus, '删除成功。', 'ok');
+            await loadList();
+          } catch (error) {
+            setStatus(listStatus, error.message, 'error');
+          }
+        });
+        cardList.appendChild(card);
+      });
+    }
+
+    async function loadList() {
+      const pwd = requirePassword();
+      if (!pwd) return;
+      setStatus(listStatus, '正在读取应用列表...', '');
+      try {
+        const resp = await fetch('/api/admin/downloads?adminPassword=' + encodeURIComponent(pwd));
+        const data = await resp.json();
+        if (!data.success) {
+          setStatus(listStatus, data.error || '读取失败', 'error');
+          return;
+        }
+        renderList(data.items || []);
+        setStatus(listStatus, `已读取 ${(data.items || []).length} 个应用。`, 'ok');
+      } catch (error) {
+        setStatus(listStatus, error.message, 'error');
+      }
+    }
+
+    async function uploadApp() {
+      const pwd = requirePassword();
+      if (!pwd) return;
+      const appName = document.getElementById('appName').value.trim();
+      const appVersion = document.getElementById('appVersion').value.trim();
+      const appDesc = document.getElementById('appDesc').value.trim();
+      const fileInput = document.getElementById('appFile');
+      const file = fileInput.files && fileInput.files[0];
+
+      if (!appName) {
+        setStatus(uploadStatus, '请先填写应用名称。', 'error');
+        return;
+      }
+      if (!file) {
+        setStatus(uploadStatus, '请先选择一个文件。', 'error');
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        setStatus(uploadStatus, '文件过大，请控制在 100MB 内。', 'error');
+        return;
+      }
+
+      setStatus(uploadStatus, '正在上传，请稍候...', '');
+      try {
+        const dataUrl = await toDataUrl(file);
+        const resp = await fetch('/api/admin/downloads/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminPassword: pwd,
+            name: appName,
+            version: appVersion,
+            description: appDesc,
+            fileName: file.name,
+            base64Data: dataUrl
+          })
+        });
+        const data = await resp.json();
+        if (!data.success) {
+          setStatus(uploadStatus, data.error || '上传失败', 'error');
+          return;
+        }
+        setStatus(uploadStatus, '上传成功，已发布到下载页。', 'ok');
+        document.getElementById('appName').value = '';
+        document.getElementById('appVersion').value = '';
+        document.getElementById('appDesc').value = '';
+        fileInput.value = '';
+        await loadList();
+      } catch (error) {
+        setStatus(uploadStatus, error.message, 'error');
+      }
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadList);
+    document.getElementById('uploadBtn').addEventListener('click', uploadApp);
+  </script>
+</body>
+</html>
